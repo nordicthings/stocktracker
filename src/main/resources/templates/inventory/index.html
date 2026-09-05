@@ -6,8 +6,9 @@
     <title>Vorratsverwaltung</title>
     <link rel="stylesheet" th:href="@{/css/inventory.css}">
     <script defer th:src="@{/webjars/htmx.org/dist/htmx.min.js}"></script>
+    <script defer th:src="@{/js/inventory-scroll.js}"></script>
 </head>
-<body hx-boost="true">
+<body class="inventory-page" hx-boost="true">
 <main class="page-shell">
     <header class="page-header">
         <div>
@@ -35,31 +36,15 @@
     <section class="message error" th:if="${errorMessage}" th:text="${errorMessage}"></section>
 
     <section th:if="${activeTab == 'inventory'}" class="workspace" id="inventory-workspace">
-        <form class="quick-entry-row" method="post" th:action="@{/items}" aria-label="Artikel erfassen">
-            <label>
-                <span>Name</span>
-                <input name="name" required maxlength="200" autocomplete="off">
-            </label>
-            <label>
-                <span>Istbestand</span>
-                <input name="currentStock" required inputmode="numeric" pattern="[0-9]+" min="0" type="number">
-            </label>
-            <label>
-                <span>Mindestbestand</span>
-                <input name="minimumStock" required inputmode="numeric" pattern="[0-9]+" min="1" type="number">
-            </label>
-            <label>
-                <span>Sollbestand</span>
-                <input name="targetStock" required inputmode="numeric" pattern="[0-9]+" min="1" type="number">
-            </label>
-            <button type="submit">Hinzufügen</button>
-        </form>
-
         <form class="toolbar" method="get" th:action="@{/}">
             <input type="hidden" name="tab" value="inventory">
             <label>
                 <span>Suche</span>
-                <input name="searchTerm" th:value="${searchTerm}" autocomplete="off" placeholder="Artikelname">
+                <input name="searchTerm"
+                       th:value="${searchTerm}"
+                       th:autofocus="${focusTarget == 'inventorySearch'}"
+                       autocomplete="off"
+                       placeholder="Artikelname">
             </label>
             <label>
                 <span>Sortierung</span>
@@ -80,15 +65,15 @@
 
         <p class="empty-state" th:if="${inventoryOverview.items.isEmpty()}">Noch keine Artikel vorhanden.</p>
 
-        <div class="inventory-table-wrap" th:if="${!inventoryOverview.items.isEmpty()}">
+        <div class="inventory-table-wrap" data-inventory-scroll-container th:if="${!inventoryOverview.items.isEmpty()}">
             <table class="inventory-table">
                 <thead>
                 <tr>
                     <th scope="col">Artikel</th>
-                    <th scope="col">Istbestand</th>
+                    <th scope="col">Ist</th>
                     <th scope="col">Mindestbestand</th>
-                    <th scope="col">Sollbestand</th>
-                    <th scope="col">Aktionen</th>
+                    <th scope="col">Soll</th>
+                    <th scope="col" aria-label="Aktionen"></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -104,20 +89,56 @@
                     <td th:text="${item.targetStock}">0</td>
                     <td>
                         <div class="table-actions">
-                            <form method="post" th:action="@{/items/{itemId}/stock/decrease(itemId=${item.id})}">
+                            <form method="post"
+                                  data-preserve-inventory-scroll
+                                  th:action="@{/items/{itemId}/stock/decrease(itemId=${item.id})}">
                                 <input type="hidden" name="quantity" value="1">
-                                <button type="submit" th:disabled="${item.currentStock == 0}">Entnehmen</button>
+                                <button type="submit" th:disabled="${item.currentStock == 0}" aria-label="Istbestand um 1 verringern">-</button>
                             </form>
-                            <form method="post" th:action="@{/items/{itemId}/stock/fill-to-target(itemId=${item.id})}">
+                            <form method="post"
+                                  data-preserve-inventory-scroll
+                                  th:action="@{/items/{itemId}/stock/increase(itemId=${item.id})}">
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit" aria-label="Istbestand um 1 erhöhen">+</button>
+                            </form>
+                            <form method="post"
+                                  data-preserve-inventory-scroll
+                                  th:action="@{/items/{itemId}/stock/fill-to-target(itemId=${item.id})}">
                                 <button type="submit" th:disabled="${!item.isBelowTargetStock}">Auf Sollbestand</button>
                             </form>
-                            <a class="secondary-action" th:href="@{/items/{itemId}(itemId=${item.id})}">Bearbeiten</a>
+                            <a class="secondary-action"
+                               data-preserve-inventory-scroll
+                               th:href="@{/items/{itemId}(itemId=${item.id})}">Bearbeiten</a>
                         </div>
                     </td>
                 </tr>
                 </tbody>
             </table>
         </div>
+
+        <form class="quick-entry-row" method="post" th:action="@{/items}" aria-label="Artikel erfassen">
+            <label>
+                <span>Name</span>
+                <input name="name"
+                       th:autofocus="${focusTarget == 'quickEntryName'}"
+                       required
+                       maxlength="200"
+                       autocomplete="off">
+            </label>
+            <label>
+                <span>Istbestand</span>
+                <input name="currentStock" required inputmode="numeric" pattern="[0-9]+" min="0" type="number">
+            </label>
+            <label>
+                <span>Mindestbestand</span>
+                <input name="minimumStock" required inputmode="numeric" pattern="[0-9]+" min="1" type="number">
+            </label>
+            <label>
+                <span>Sollbestand</span>
+                <input name="targetStock" required inputmode="numeric" pattern="[0-9]+" min="1" type="number">
+            </label>
+            <button type="submit">Hinzufügen</button>
+        </form>
     </section>
 
     <section th:if="${activeTab == 'shopping'}" class="workspace" id="shopping-workspace">

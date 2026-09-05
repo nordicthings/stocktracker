@@ -13,6 +13,7 @@ import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import org.nordicthings.stocktracker.inventory.adapter.persistence.InventoryItemJpaRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -75,15 +76,22 @@ class InventoryControllerTest @Autowired constructor(
         assertContains(createResponse.body(), "Nachkaufbedarf")
         assertContains(createResponse.body(), "1 Artikel unter Mindestbestand")
         assertContains(createResponse.body(), "<th scope=\"col\">Artikel</th>")
-        assertContains(createResponse.body(), "<th scope=\"col\">Istbestand</th>")
-        assertContains(createResponse.body(), "<th scope=\"col\">Sollbestand</th>")
-        assertContains(createResponse.body(), "Entnehmen")
+        assertContains(createResponse.body(), "<th scope=\"col\">Ist</th>")
+        assertContains(createResponse.body(), "<th scope=\"col\">Soll</th>")
+        assertContains(createResponse.body(), "<th scope=\"col\" aria-label=\"Aktionen\"></th>")
+        assertFalse(createResponse.body().contains("<th scope=\"col\">Aktionen</th>"))
+        assertContains(createResponse.body(), "aria-label=\"Istbestand um 1 verringern\">-</button>")
+        assertContains(createResponse.body(), "aria-label=\"Istbestand um 1 erhöhen\">+</button>")
         assertContains(createResponse.body(), "Auf Sollbestand")
+        assertContains(createResponse.body(), "/js/inventory-scroll.js")
+        assertContains(createResponse.body(), "data-inventory-scroll-container")
+        assertContains(createResponse.body(), "data-preserve-inventory-scroll")
         val inventoryTableHtml = createResponse.body().substringBefore("</table>")
         assertFalse(inventoryTableHtml.contains(">Setzen<"))
-        assertFalse(inventoryTableHtml.contains(">+<"))
-        assertFalse(inventoryTableHtml.contains(">-<"))
+        assertFalse(inventoryTableHtml.contains(">Entnehmen<"))
         assertFalse(inventoryTableHtml.contains("1 entnehmen"))
+        assertTrue(createResponse.body().indexOf("class=\"toolbar\"") < createResponse.body().indexOf("class=\"inventory-table-wrap\""))
+        assertTrue(createResponse.body().indexOf("class=\"inventory-table-wrap\"") < createResponse.body().indexOf("class=\"quick-entry-row\""))
 
         val shoppingResponse = get("/?tab=shopping")
 
@@ -121,6 +129,48 @@ class InventoryControllerTest @Autowired constructor(
     }
 
     @Test
+    fun `focuses search field after filtering inventory`() {
+        post(
+            "/items",
+            form(
+                "name" to "Haferflocken",
+                "currentStock" to "2",
+                "minimumStock" to "3",
+                "targetStock" to "5",
+            ),
+        )
+
+        val response = get("/?tab=inventory&searchTerm=Hafer")
+
+        assertEquals(200, response.statusCode())
+        val toolbarHtml = response.body()
+            .substringAfter("class=\"toolbar\"")
+            .substringBefore("</form>")
+        assertContains(toolbarHtml, "name=\"searchTerm\"")
+        assertContains(toolbarHtml, "autofocus=\"autofocus\"")
+    }
+
+    @Test
+    fun `focuses quick entry name field after creating item`() {
+        val response = post(
+            "/items",
+            form(
+                "name" to "Linsen",
+                "currentStock" to "1",
+                "minimumStock" to "2",
+                "targetStock" to "4",
+            ),
+        )
+
+        assertEquals(200, response.statusCode())
+        val quickEntryHtml = response.body()
+            .substringAfter("class=\"quick-entry-row\"")
+            .substringBefore("</form>")
+        assertContains(quickEntryHtml, "name=\"name\"")
+        assertContains(quickEntryHtml, "autofocus=\"autofocus\"")
+    }
+
+    @Test
     fun `decreases current stock by one from inventory table`() {
         post(
             "/items",
@@ -141,6 +191,29 @@ class InventoryControllerTest @Autowired constructor(
         assertEquals(200, response.statusCode())
         assertFalse(response.body().contains("Istbestand wurde verringert."))
         assertContains(response.body(), ">1<")
+    }
+
+    @Test
+    fun `increases current stock by one from inventory table`() {
+        post(
+            "/items",
+            form(
+                "name" to "Haferflocken",
+                "currentStock" to "2",
+                "minimumStock" to "3",
+                "targetStock" to "5",
+            ),
+        )
+        val itemId = jpaRepository.findAll().single().id
+
+        val response = post(
+            "/items/$itemId/stock/increase",
+            form("quantity" to "1"),
+        )
+
+        assertEquals(200, response.statusCode())
+        assertFalse(response.body().contains("Istbestand wurde erhöht."))
+        assertContains(response.body(), ">3<")
     }
 
     @Test
@@ -176,7 +249,12 @@ class InventoryControllerTest @Autowired constructor(
         )
 
         assertEquals(200, emptyStockResponse.statusCode())
-        assertContains(emptyStockResponse.body(), "<button type=\"submit\" disabled=\"disabled\">Entnehmen</button>")
+        assertTrue(
+            Regex("""<button[^>]*disabled="disabled"[^>]*aria-label="Istbestand um 1 verringern"[^>]*>-</button>""")
+                .containsMatchIn(emptyStockResponse.body()) ||
+                Regex("""<button[^>]*aria-label="Istbestand um 1 verringern"[^>]*disabled="disabled"[^>]*>-</button>""")
+                    .containsMatchIn(emptyStockResponse.body()),
+        )
 
         jpaRepository.deleteAll()
 
@@ -230,10 +308,14 @@ class InventoryControllerTest @Autowired constructor(
 
         assertEquals(200, detailResponse.statusCode())
         assertContains(detailResponse.body(), "Reis (1kg)")
-        assertContains(detailResponse.body(), "Istbestand")
-        assertContains(detailResponse.body(), "Sollbestand")
+        assertContains(detailResponse.body(), "<span>Ist</span>")
+        assertContains(detailResponse.body(), "<span>Soll</span>")
+        assertFalse(detailResponse.body().contains("<span>Istbestand</span>"))
+        assertFalse(detailResponse.body().contains("<span>Sollbestand</span>"))
         assertContains(detailResponse.body(), "Änderungen speichern")
         assertContains(detailResponse.body(), ">Zurück</a>")
+        assertContains(detailResponse.body(), "/js/inventory-scroll.js")
+        assertContains(detailResponse.body(), "data-restore-inventory-scroll")
         assertContains(detailResponse.body(), "Löschen")
         assertFalse(detailResponse.body().contains("Zur Istbestandspflege"))
         assertFalse(detailResponse.body().contains("Istbestand speichern"))

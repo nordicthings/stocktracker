@@ -53,12 +53,13 @@ class InventoryController(
     ): String {
         val selectedInventorySort = inventorySort.toInventoryItemSort()
         val selectedShoppingSort = shoppingSort.toShoppingListSort()
+        val activeTab = if (tab == "shopping") "shopping" else "inventory"
         val inventoryOverview = viewInventoryItems.viewInventoryItems(
             InventoryItemsQuery(searchTerm = searchTerm, sort = selectedInventorySort),
         )
         val shoppingList = viewShoppingList.viewShoppingList(ShoppingListQuery(selectedShoppingSort))
 
-        model.addAttribute("activeTab", if (tab == "shopping") "shopping" else "inventory")
+        model.addAttribute("activeTab", activeTab)
         model.addAttribute("searchTerm", searchTerm.orEmpty())
         model.addAttribute("inventorySort", selectedInventorySort)
         model.addAttribute("shoppingSort", selectedShoppingSort)
@@ -66,6 +67,9 @@ class InventoryController(
         model.addAttribute("shoppingSorts", ShoppingListSort.entries)
         model.addAttribute("inventoryOverview", inventoryOverview)
         model.addAttribute("shoppingList", shoppingList)
+        if (!model.containsAttribute("focusTarget") && activeTab == "inventory" && tab == "inventory") {
+            model.addAttribute("focusTarget", "inventorySearch")
+        }
 
         return "inventory/index"
     }
@@ -96,7 +100,11 @@ class InventoryController(
         @RequestParam minimumStock: String,
         @RequestParam targetStock: String,
         redirectAttributes: RedirectAttributes,
-    ): String = handleInventoryAction(redirectAttributes, successMessage = null) {
+    ): String = handleInventoryAction(
+        redirectAttributes = redirectAttributes,
+        successMessage = null,
+        successFocusTarget = "quickEntryName",
+    ) {
         createInventoryItem.create(
             CreateInventoryItemCommand(
                 name = name,
@@ -152,7 +160,7 @@ class InventoryController(
         @PathVariable itemId: String,
         @RequestParam(defaultValue = "1") quantity: String,
         redirectAttributes: RedirectAttributes,
-    ): String = handleInventoryAction(redirectAttributes, "Istbestand wurde erhöht.") {
+    ): String = handleInventoryAction(redirectAttributes, successMessage = null) {
         increaseCurrentStock.increaseCurrentStock(ChangeCurrentStockCommand(itemId, quantity.toRequiredInt("Menge")))
     }
 
@@ -177,12 +185,16 @@ class InventoryController(
         redirectAttributes: RedirectAttributes,
         successMessage: String?,
         redirectPath: String = "/",
+        successFocusTarget: String? = null,
         action: () -> Unit,
     ): String {
         try {
             action()
             if (successMessage != null) {
                 redirectAttributes.addFlashAttribute("successMessage", successMessage)
+            }
+            if (successFocusTarget != null) {
+                redirectAttributes.addFlashAttribute("focusTarget", successFocusTarget)
             }
         } catch (exception: InventoryApplicationException) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.toUserMessage())

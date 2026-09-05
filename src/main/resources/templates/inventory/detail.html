@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${item.name} + ' bearbeiten'">Artikel bearbeiten</title>
     <link rel="stylesheet" th:href="@{/css/inventory.css}">
+    <script defer th:src="@{/js/inventory-scroll.js}"></script>
 </head>
 <body>
 <main class="page-shell detail-shell">
@@ -13,7 +14,7 @@
             <p class="eyebrow">Nordic Things</p>
             <h1 th:text="${item.name}">Artikel</h1>
         </div>
-        <a class="secondary-action" th:href="@{/}">Zurück</a>
+        <a class="secondary-action" data-restore-inventory-scroll th:href="@{/}">Zurück</a>
     </header>
 
     <section class="message success" th:if="${successMessage}" th:text="${successMessage}"></section>
@@ -21,12 +22,12 @@
 
     <section class="detail-panel">
         <form id="item-edit-form" class="item-form compact" method="post" th:action="@{/items/{itemId}/edit(itemId=${item.id})}">
-            <label>
+            <label class="wide">
                 <span>Artikel</span>
                 <input name="name" required maxlength="200" th:value="${item.name}">
             </label>
             <label>
-                <span>Istbestand</span>
+                <span>Ist</span>
                 <input name="currentStock" required inputmode="numeric" min="0" type="number" th:value="${item.currentStock}">
             </label>
             <label>
@@ -34,7 +35,7 @@
                 <input name="minimumStock" required inputmode="numeric" min="1" type="number" th:value="${item.minimumStock}">
             </label>
             <label>
-                <span>Sollbestand</span>
+                <span>Soll</span>
                 <input name="targetStock" required inputmode="numeric" min="1" type="number" th:value="${item.targetStock}">
             </label>
             <label class="wide">
