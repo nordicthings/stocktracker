@@ -142,7 +142,7 @@ class InventoryController(
     fun delete(
         @PathVariable itemId: String,
         redirectAttributes: RedirectAttributes,
-    ): String = handleInventoryAction(redirectAttributes, "Artikel wurde gelöscht.") {
+    ): String = handleInventoryAction(redirectAttributes, successMessage = null) {
         deleteInventoryItem.delete(DeleteInventoryItemCommand(itemId, confirmed = true))
     }
 

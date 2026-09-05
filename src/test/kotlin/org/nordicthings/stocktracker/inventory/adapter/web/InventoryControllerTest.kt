@@ -355,7 +355,7 @@ class InventoryControllerTest @Autowired constructor(
         val deleteResponse = post("/items/$itemId/delete", "")
 
         assertEquals(200, deleteResponse.statusCode())
-        assertContains(deleteResponse.body(), "Artikel wurde gelöscht.")
+        assertFalse(deleteResponse.body().contains("Artikel wurde gelöscht."))
         assertContains(deleteResponse.body(), "Noch keine Artikel vorhanden.")
     }
 
