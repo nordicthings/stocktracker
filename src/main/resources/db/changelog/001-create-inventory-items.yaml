@@ -1,0 +1,57 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-inventory-items
+      author: jens
+      changes:
+        - createTable:
+            tableName: inventory_items
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_inventory_items
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: normalized_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: current_stock
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: minimum_stock
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: target_stock
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: note
+                  type: varchar(500)
+              - column:
+                  name: created_at
+                  type: datetime
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: datetime
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: inventory_items
+            columnNames: normalized_name
+            constraintName: uk_inventory_items_normalized_name

@@ -205,9 +205,9 @@ Der Persistence-Adapter verwendet eigene JPA-Entities und Mapper zwischen Persis
 Vorgesehene Bausteine:
 
 - `InventoryItemJpaEntity`
-- `SpringDataInventoryItemRepository`
-- `JpaInventoryItemRepository`
-- `InventoryItemPersistenceMapper`
+- `InventoryItemJpaRepository`
+- `InventoryItemJpaAdapter`
+- `InventoryItemJpaMapper`
 
 Die Domain-Typen werden nicht mit JPA-Annotationen versehen.
 
