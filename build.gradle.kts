@@ -41,6 +41,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-liquibase")
+    implementation("org.jmolecules:kmolecules-ddd:2.0.1")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
     runtimeOnly("com.h2database:h2")
