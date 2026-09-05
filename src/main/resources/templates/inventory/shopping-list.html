@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Einkaufsliste</title>
+    <link rel="stylesheet" th:href="@{/css/inventory.css}">
+    <script defer th:src="@{/webjars/htmx.org/dist/htmx.min.js}"></script>
+</head>
+<body class="inventory-page" hx-boost="true">
+<main class="page-shell">
+    <header class="page-header">
+        <div><p class="eyebrow">Nordic Things</p><h1>Einkaufsliste</h1></div>
+        <a class="secondary-action" th:href="@{/items}">Zurück zur Bestandsliste</a>
+    </header>
+
+    <section class="message success" th:if="${successMessage}" th:text="${successMessage}"></section>
+    <section class="message error" th:if="${errorMessage}" th:text="${errorMessage}"></section>
+
+    <section class="workspace" id="shopping-workspace">
+        <form class="toolbar" method="get" th:action="@{/shopping-list}">
+            <label><span>Sortierung</span><select name="shoppingSort">
+                <option th:each="sort : ${shoppingSorts}" th:value="${sort}" th:selected="${sort == shoppingSort}"
+                        th:text="${sort.name() == 'NAME' ? 'Artikelname' : sort.name() == 'RECOMMENDED_PURCHASE_QUANTITY_DESCENDING' ? 'größte Einkaufsmenge zuerst' : 'kleinste Einkaufsmenge zuerst'}"></option>
+            </select></label>
+            <button type="submit">Anzeigen</button>
+        </form>
+
+        <p class="empty-state" th:if="${shoppingList.isEmpty()}">Aktuell muss nichts aufgefüllt werden.</p>
+        <section class="shopping-list" th:if="${!shoppingList.isEmpty()}">
+            <article class="shopping-row" th:each="item : ${shoppingList}" th:classappend="${item.isBelowMinimumStock} ? 'critical'">
+                <div><h2 th:text="${item.itemName}">Reis</h2><span class="status" th:if="${item.isBelowMinimumStock}">Unter Mindestbestand</span><p th:if="${item.note}" th:text="${item.note}">Hinweis</p></div>
+                <dl><div><dt>Istbestand</dt><dd th:text="${item.currentStock}">0</dd></div><div><dt>Mindestbestand</dt><dd th:text="${item.minimumStock}">0</dd></div><div><dt>Einkaufsmenge</dt><dd th:text="${item.recommendedPurchaseQuantity}">0</dd></div></dl>
+                <form method="post" th:action="@{/items/{itemId}/stock/fill-to-target(itemId=${item.itemId})}"><input type="hidden" name="returnTo" value="shopping-list"><button type="submit">Auf Sollbestand</button></form>
+            </article>
+        </section>
+    </section>
+</main>
+</body>
+</html>

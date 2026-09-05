@@ -15,11 +15,8 @@ import org.nordicthings.stocktracker.inventory.application.InventoryItemsQuery
 import org.nordicthings.stocktracker.inventory.application.SetCurrentStockCommand
 import org.nordicthings.stocktracker.inventory.application.SetCurrentStockUseCase
 import org.nordicthings.stocktracker.inventory.application.SetStockToTargetUseCase
-import org.nordicthings.stocktracker.inventory.application.ShoppingListQuery
-import org.nordicthings.stocktracker.inventory.application.ShoppingListSort
 import org.nordicthings.stocktracker.inventory.application.ViewInventoryItemUseCase
 import org.nordicthings.stocktracker.inventory.application.ViewInventoryItemsUseCase
-import org.nordicthings.stocktracker.inventory.application.ViewShoppingListUseCase
 import org.nordicthings.stocktracker.inventory.domain.InventoryException
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
@@ -30,7 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.mvc.support.RedirectAttributes
 
 @Controller
-class InventoryController(
+class InventoryItemController(
     private val createInventoryItem: CreateInventoryItemUseCase,
     private val editInventoryItem: EditInventoryItemUseCase,
     private val deleteInventoryItem: DeleteInventoryItemUseCase,
@@ -40,38 +37,31 @@ class InventoryController(
     private val decreaseCurrentStock: DecreaseCurrentStockUseCase,
     private val viewInventoryItem: ViewInventoryItemUseCase,
     private val viewInventoryItems: ViewInventoryItemsUseCase,
-    private val viewShoppingList: ViewShoppingListUseCase,
 ) {
 
     @GetMapping("/")
-    fun index(
-        @RequestParam(required = false) tab: String?,
+    fun root(): String = "redirect:/items"
+
+    @GetMapping("/items")
+    fun items(
         @RequestParam(required = false) searchTerm: String?,
         @RequestParam(required = false) inventorySort: String?,
-        @RequestParam(required = false) shoppingSort: String?,
         model: Model,
     ): String {
         val selectedInventorySort = inventorySort.toInventoryItemSort()
-        val selectedShoppingSort = shoppingSort.toShoppingListSort()
-        val activeTab = if (tab == "shopping") "shopping" else "inventory"
         val inventoryOverview = viewInventoryItems.viewInventoryItems(
             InventoryItemsQuery(searchTerm = searchTerm, sort = selectedInventorySort),
         )
-        val shoppingList = viewShoppingList.viewShoppingList(ShoppingListQuery(selectedShoppingSort))
 
-        model.addAttribute("activeTab", activeTab)
         model.addAttribute("searchTerm", searchTerm.orEmpty())
         model.addAttribute("inventorySort", selectedInventorySort)
-        model.addAttribute("shoppingSort", selectedShoppingSort)
         model.addAttribute("inventorySorts", InventoryItemSort.entries)
-        model.addAttribute("shoppingSorts", ShoppingListSort.entries)
         model.addAttribute("inventoryOverview", inventoryOverview)
-        model.addAttribute("shoppingList", shoppingList)
-        if (!model.containsAttribute("focusTarget") && activeTab == "inventory" && tab == "inventory") {
+        if (!model.containsAttribute("focusTarget") && searchTerm != null) {
             model.addAttribute("focusTarget", "inventorySearch")
         }
 
-        return "inventory/index"
+        return "inventory/items"
     }
 
     @GetMapping("/items/{itemId}")
@@ -84,10 +74,10 @@ class InventoryController(
             model.addAttribute("item", viewInventoryItem.viewInventoryItem(itemId))
         } catch (exception: InventoryApplicationException) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.toUserMessage())
-            return "redirect:/"
+            return "redirect:/items"
         } catch (exception: InventoryException) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.toUserMessage())
-            return "redirect:/"
+            return "redirect:/items"
         }
 
         return "inventory/detail"
@@ -176,15 +166,20 @@ class InventoryController(
     @PostMapping("/items/{itemId}/stock/fill-to-target")
     fun fillToTarget(
         @PathVariable itemId: String,
+        @RequestParam(required = false) returnTo: String?,
         redirectAttributes: RedirectAttributes,
-    ): String = handleInventoryAction(redirectAttributes, successMessage = null) {
+    ): String = handleInventoryAction(
+        redirectAttributes = redirectAttributes,
+        successMessage = null,
+        redirectPath = returnTo.redirectPath(),
+    ) {
         setStockToTarget.setStockToTarget(itemId)
     }
 
     private fun handleInventoryAction(
         redirectAttributes: RedirectAttributes,
         successMessage: String?,
-        redirectPath: String = "/",
+        redirectPath: String = "/items",
         successFocusTarget: String? = null,
         action: () -> Unit,
     ): String {
@@ -210,14 +205,13 @@ class InventoryController(
     private fun String?.toInventoryItemSort(): InventoryItemSort =
         enumValueOrDefault(this, InventoryItemSort.NAME)
 
-    private fun String?.toShoppingListSort(): ShoppingListSort =
-        enumValueOrDefault(this, ShoppingListSort.NAME)
-
     private inline fun <reified T : Enum<T>> enumValueOrDefault(value: String?, default: T): T =
         value?.let { candidate -> T::class.java.enumConstants.firstOrNull { it.name == candidate } } ?: default
 
     private fun String.toRequiredInt(fieldName: String): Int =
         trim().toIntOrNull() ?: throw InvalidWebInputException("$fieldName muss eine ganze Zahl sein.")
 }
+
+private fun String?.redirectPath(): String = if (this == "shopping-list") "/shopping-list" else "/items"
 
 private class InvalidWebInputException(message: String) : RuntimeException(message)

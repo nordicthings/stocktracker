@@ -26,7 +26,7 @@ import org.springframework.test.context.TestPropertySource
         "spring.datasource.url=jdbc:h2:mem:inventory-web-test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1",
     ],
 )
-class InventoryControllerTest @Autowired constructor(
+class InventoryItemControllerTest @Autowired constructor(
     private val jpaRepository: InventoryItemJpaRepository,
 ) {
 
@@ -45,7 +45,7 @@ class InventoryControllerTest @Autowired constructor(
 
     @Test
     fun `shows the empty inventory page`() {
-        val response = get("/")
+        val response = get("/items")
 
         assertEquals(200, response.statusCode())
         assertContains(response.body(), "Vorratsverwaltung")
@@ -93,7 +93,7 @@ class InventoryControllerTest @Autowired constructor(
         assertTrue(createResponse.body().indexOf("class=\"toolbar\"") < createResponse.body().indexOf("class=\"inventory-table-wrap\""))
         assertTrue(createResponse.body().indexOf("class=\"inventory-table-wrap\"") < createResponse.body().indexOf("class=\"quick-entry-row\""))
 
-        val shoppingResponse = get("/?tab=shopping")
+        val shoppingResponse = get("/shopping-list")
 
         assertEquals(200, shoppingResponse.statusCode())
         assertContains(shoppingResponse.body(), "Einkaufsliste")
@@ -120,7 +120,7 @@ class InventoryControllerTest @Autowired constructor(
         assertContains(response.body(), "1 Artikel unter Sollbestand")
         assertFalse(response.body().contains("1 Artikel unter Mindestbestand"))
 
-        val shoppingResponse = get("/?tab=shopping")
+        val shoppingResponse = get("/shopping-list")
 
         assertEquals(200, shoppingResponse.statusCode())
         assertContains(shoppingResponse.body(), "Salz")
@@ -140,7 +140,7 @@ class InventoryControllerTest @Autowired constructor(
             ),
         )
 
-        val response = get("/?tab=inventory&searchTerm=Hafer")
+        val response = get("/items?searchTerm=Hafer")
 
         assertEquals(200, response.statusCode())
         val toolbarHtml = response.body()
@@ -234,6 +234,29 @@ class InventoryControllerTest @Autowired constructor(
         assertEquals(200, response.statusCode())
         assertFalse(response.body().contains("Istbestand wurde auf Sollbestand gesetzt."))
         assertContains(response.body(), ">5<")
+    }
+
+    @Test
+    fun `fills current stock to target and returns to shopping list when requested there`() {
+        post(
+            "/items",
+            form(
+                "name" to "Tomaten",
+                "currentStock" to "1",
+                "minimumStock" to "2",
+                "targetStock" to "5",
+            ),
+        )
+        val itemId = jpaRepository.findAll().single().id
+
+        val response = post(
+            "/items/$itemId/stock/fill-to-target",
+            form("returnTo" to "shopping-list"),
+        )
+
+        assertEquals(200, response.statusCode())
+        assertContains(response.body(), "Einkaufsliste")
+        assertContains(response.body(), "Aktuell muss nichts aufgefüllt werden.")
     }
 
     @Test

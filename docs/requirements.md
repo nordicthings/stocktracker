@@ -50,7 +50,7 @@ Istbestandsangaben beziehen sich immer auf Stück. Unterschiedliche Packungsgrö
 
 In der ersten Version werden keine Kategorien verwaltet. Kategorien können in einer späteren Version ergänzt werden.
 
-Die optionale Notiz hat keine eigene steuernde Fachlogik. Sie kann Einkaufshinweise enthalten und soll bei nachkaufpflichtigen Artikeln in der Einkaufsliste angezeigt werden.
+Die optionale Notiz hat keine eigene steuernde Fachlogik. Sie kann Einkaufshinweise enthalten und soll bei Artikeln in der Einkaufsliste angezeigt werden.
 
 ### Istbestand pflegen
 
@@ -81,17 +81,17 @@ Es ist erlaubt, den Istbestand über den Sollbestand hinaus aufzubauen.
 
 ### Einkaufsliste ableiten
 
-Die Anwendung soll eine Liste aller Artikel anzeigen können, die eingekauft werden müssen.
+Die Anwendung soll eine Liste aller Artikel anzeigen können, die aufgefüllt werden sollen.
 
-Ein Artikel gehört auf diese Liste, wenn sein Istbestand unter dem hinterlegten Mindestbestand liegt.
+Ein Artikel gehört auf diese Liste, wenn sein Istbestand unter dem hinterlegten Sollbestand liegt.
 
-Die Einkaufsliste wird in der ersten Version ausschließlich aus den Istbeständen abgeleitet. Einträge können nicht manuell ergänzt oder abgehakt werden. Ein Artikel verschwindet erst von der Einkaufsliste, wenn sein Istbestand so erhöht wurde, dass er nicht mehr unter dem Mindestbestand liegt.
+Die Einkaufsliste wird in der ersten Version ausschließlich aus den Istbeständen abgeleitet. Einträge können nicht manuell ergänzt oder abgehakt werden. Ein Artikel verschwindet erst von der Einkaufsliste, wenn sein Istbestand so erhöht wurde, dass er nicht mehr unter dem Sollbestand liegt.
 
 Die empfohlene Einkaufsmenge ergibt sich aus der Differenz zwischen Sollbestand und Istbestand.
 
-Liegt der Istbestand bereits auf oder über dem Sollbestand, beträgt die empfohlene Einkaufsmenge 0. Da ein Artikel nur bei Unterschreitung des Mindestbestands auf die Einkaufsliste kommt, ist dieser Fall nur bei inkonsistenten oder später geänderten Stammdaten relevant.
+Liegt der Istbestand bereits auf oder über dem Sollbestand, beträgt die empfohlene Einkaufsmenge 0. Da ein Artikel nur bei Unterschreitung des Sollbestands auf die Einkaufsliste kommt, ist dieser Fall nur bei inkonsistenten oder später geänderten Stammdaten relevant.
 
-Wenn für einen nachkaufpflichtigen Artikel eine Notiz hinterlegt ist, soll sie in der Einkaufsliste als Einkaufshinweis angezeigt werden.
+Wenn für einen Artikel in der Einkaufsliste eine Notiz hinterlegt ist, soll sie dort als Einkaufshinweis angezeigt werden.
 
 Vorratsliste und Einkaufsliste werden standardmäßig alphabetisch nach Artikelname sortiert.
 
@@ -125,13 +125,13 @@ Die Startseite zeigt in Version 1 eine schlichte Oberfläche mit zwei getrennten
 
 Der Tab "Istbestandspflege" dient als Hauptarbeitsbereich für das Erfassen und Pflegen der Artikel-Istbestände.
 
-Der Tab "Einkaufsliste" zeigt alle aktuell nachkaufpflichtigen Artikel.
+Der Tab "Einkaufsliste" zeigt alle Artikel, deren Istbestand unter dem Sollbestand liegt. Kritische Artikel unter dem Mindestbestand sollen in der Liste hervorgehoben werden.
 
 Bei bestehendem Nachkaufbedarf soll die Startseite deutlich darauf hinweisen.
 
 Wenn noch keine Artikel vorhanden sind, zeigt die Anwendung einen einfachen Hinweis.
 
-Wenn keine Artikel nachgekauft werden müssen, zeigt die Einkaufsliste einen einfachen Hinweis.
+Wenn keine Artikel aufgefüllt werden müssen, zeigt die Einkaufsliste einen einfachen Hinweis.
 
 ### Begrifflichkeit
 
@@ -148,7 +148,7 @@ In Version 1 werden in der Oberfläche die folgenden Begriffe verwendet:
 
 Wenn mindestens ein Artikel unter den Mindestbestand sinkt, soll die Anwendung in Version 1 innerhalb der Oberfläche deutlich darauf hinweisen.
 
-Die Oberfläche soll eine Liste aller nachzukaufenden Artikel anzeigen.
+Die Oberfläche soll eine Liste aller aufzufüllenden Artikel anzeigen und kritische Artikel unter Mindestbestand deutlich hervorheben.
 
 Eine aktive asynchrone Benachrichtigung wird in Version 1 noch nicht umgesetzt.
 
@@ -158,6 +158,8 @@ In einer späteren Version soll es definitiv eine aktive Benachrichtigungsfunkti
 
 - Ein Artikel mit Istbestand unter Mindestbestand ist nachkaufpflichtig.
 - Ein Artikel mit Istbestand gleich Mindestbestand ist nicht nachkaufpflichtig.
+- Ein Artikel mit Istbestand unter Sollbestand erscheint auf der Einkaufsliste.
+- Ein Artikel mit Istbestand gleich oder über Sollbestand erscheint nicht auf der Einkaufsliste.
 - Istbestand, Mindestbestand und Sollbestand sind nicht-negative ganze Zahlen.
 - Der Mindestbestand muss mindestens 1 sein.
 - Artikelnamen dürfen nicht leer sein.

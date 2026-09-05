@@ -237,17 +237,17 @@ Vorgesehene Spalten:
 
 ## Web-Schicht
 
-Die Web-Schicht wird für Version 1 entlang der beiden Tabs geschnitten:
+Die Web-Schicht wird für Version 1 entlang der beiden Listenansichten geschnitten:
 
 - `InventoryItemController` für den Tab "Istbestandspflege"
 - `ShoppingListController` für den Tab "Einkaufsliste"
 
-Die Tabs werden als zwei eigene serverseitig gerenderte Routen umgesetzt:
+Die Listen werden als zwei eigene serverseitig gerenderte Routen umgesetzt:
 
-- `/inventory/items` für die Istbestandspflege
-- `/inventory/shopping-list` für die Einkaufsliste
+- `/items` für die Istbestandspflege
+- `/shopping-list` für die Einkaufsliste
 
-Eine optionale Root-Route kann auf `/inventory/items` weiterleiten.
+Die Root-Route leitet auf `/items` weiter.
 
 Der `InventoryItemController` verantwortet:
 
