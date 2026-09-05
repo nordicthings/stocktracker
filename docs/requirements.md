@@ -20,7 +20,7 @@ Zum Umfang gehören:
 - einfache Suche nach Artikelname
 - Sortierung von Vorratsliste und Einkaufsliste
 - optionale Notizen als Einkaufshinweise
-- Dialoge oder aufklappbare Bereiche für Erfassung und Bearbeitung
+- Direkt sichtbare Erfassungszeile in der Bestandsliste und eigene Detailseite für die Bearbeitung
 
 Nicht zum Umfang von Version 1 gehören vorbereitende Fachfunktionen für asynchrone Benachrichtigungen, Verbrauchstracking, Haltbarkeitsverwaltung, Import/Export oder Benutzerverwaltung.
 
@@ -40,7 +40,7 @@ Für jeden Artikel sollen mindestens folgende fachliche Informationen verwaltet 
 
 Beim Erfassen eines Artikels müssen Name, Istbestand, Mindestbestand und Sollbestand angegeben werden.
 
-Das Erfassen neuer Artikel soll in Version 1 über ein aufklappbares Formular oder einen Dialog direkt von der Startseite aus möglich sein.
+Das Erfassen neuer Artikel erfolgt in Version 1 über eine direkt sichtbare Erfassungszeile in der Bestandsliste.
 
 Das Bearbeiten bestehender Artikel soll in Version 1 über eine eigene Detailseite möglich sein.
 
@@ -116,18 +116,16 @@ In Version 1 soll eine einfache Textsuche nach Artikelname unterstützt werden.
 
 Die Suche dient der schnelleren Bedienung und hat keine eigene fachliche Steuerungslogik.
 
-### Startseite und Navigation
+### Navigation
 
-Die Startseite zeigt in Version 1 eine schlichte Oberfläche mit zwei getrennten Tabs:
+Die Anwendung stellt in Version 1 zwei getrennte serverseitig gerenderte Seiten bereit:
 
-- Istbestandspflege
-- Einkaufsliste
+- Die Bestandsliste unter `/items` dient als Hauptarbeitsbereich für das Erfassen und Pflegen der Artikel-Istbestände.
+- Die Einkaufsliste unter `/shopping-list` zeigt alle Artikel, deren Istbestand unter dem Sollbestand liegt. Kritische Artikel unter dem Mindestbestand werden hervorgehoben.
 
-Der Tab "Istbestandspflege" dient als Hauptarbeitsbereich für das Erfassen und Pflegen der Artikel-Istbestände.
+Die Root-Route leitet auf die Bestandsliste weiter.
 
-Der Tab "Einkaufsliste" zeigt alle Artikel, deren Istbestand unter dem Sollbestand liegt. Kritische Artikel unter dem Mindestbestand sollen in der Liste hervorgehoben werden.
-
-Bei bestehendem Nachkaufbedarf soll die Startseite deutlich darauf hinweisen.
+Bei bestehendem Nachkaufbedarf weist die Bestandsliste deutlich darauf hin und verlinkt auf die Einkaufsliste.
 
 Wenn noch keine Artikel vorhanden sind, zeigt die Anwendung einen einfachen Hinweis.
 
@@ -180,7 +178,7 @@ In einer späteren Version soll es definitiv eine aktive Benachrichtigungsfunkti
 - Vorratsliste und Einkaufsliste werden standardmäßig alphabetisch nach Artikelname sortiert.
 - Die Sortierung der Listen kann in Version 1 in der Oberfläche geändert werden.
 - In Version 1 wird eine einfache Textsuche nach Artikelname unterstützt.
-- Die Startseite trennt Istbestandspflege und Einkaufsliste in zwei Tabs.
+- Bestandsliste und Einkaufsliste sind getrennte Seiten unter `/items` und `/shopping-list`.
 
 ## Offene Fragen
 

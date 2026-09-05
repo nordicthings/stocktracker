@@ -239,8 +239,8 @@ Vorgesehene Spalten:
 
 Die Web-Schicht wird für Version 1 entlang der beiden Listenansichten geschnitten:
 
-- `InventoryItemController` für den Tab "Istbestandspflege"
-- `ShoppingListController` für den Tab "Einkaufsliste"
+- `InventoryItemController` für die Bestandsliste und Artikelpflege
+- `ShoppingListController` für die Einkaufsliste
 
 Die Listen werden als zwei eigene serverseitig gerenderte Routen umgesetzt:
 
@@ -269,9 +269,9 @@ Der `ShoppingListController` verantwortet:
 
 Beide Controller greifen ausschließlich auf die passenden Application-Use-Case-Interfaces zu und nicht direkt auf Domain oder Persistence-Adapter.
 
-HTMX wird in Version 1 gezielt für kleine Interaktionen eingesetzt, insbesondere für schnelle Istbestandsänderungen wie `+1`, `-1`, "ein Stück entnehmen" und "auf Sollbestand setzen".
+HTMX ergänzt die serverseitig gerenderten Seiten in Version 1 über `hx-boost` für Navigation und Formulare. Die Antworten bleiben vollständige Seiten; fragmentbasierte Aktualisierungen einzelner Listenbereiche werden in Version 1 nicht verwendet.
 
-Die Grundnavigation und die beiden Tabs bleiben klassische serverseitig gerenderte Routen. Anlegen, Bearbeiten, Löschen, Suche und Sortierung dürfen zunächst klassisch per Request/Response umgesetzt werden und können später bei Bedarf fragmentbasiert verfeinert werden.
+Bestandsliste und Einkaufsliste sind klassische serverseitig gerenderte Routen. Anlegen, Bearbeiten, Löschen, Suche, Sortierung und Bestandsaktionen erfolgen per Request/Response und können später bei Bedarf fragmentbasiert verfeinert werden.
 
 ## Testschnitt
 
