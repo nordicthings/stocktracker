@@ -1,0 +1,12 @@
+.git
+.gradle
+.idea
+.kotlin
+.local
+build/classes
+build/reports
+build/test-results
+build/tmp
+out
+*.log
+.DS_Store

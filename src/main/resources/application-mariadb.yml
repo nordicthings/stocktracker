@@ -1,0 +1,6 @@
+spring:
+  datasource:
+    url: ${STOCKTRACKER_DB_URL:jdbc:mariadb://localhost:3306/stocktracker}
+    username: ${STOCKTRACKER_DB_USERNAME:stocktracker}
+    password: ${STOCKTRACKER_DB_PASSWORD:stocktracker}
+    driver-class-name: org.mariadb.jdbc.Driver

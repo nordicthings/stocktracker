@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: stocktracker
+  profiles:
+    default: h2
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.yaml
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+server:
+  port: 8080

@@ -1,0 +1,33 @@
+services:
+  mariadb:
+    image: mariadb:12
+    environment:
+      MARIADB_DATABASE: stocktracker
+      MARIADB_USER: stocktracker
+      MARIADB_PASSWORD: stocktracker
+      MARIADB_ROOT_PASSWORD: stocktracker-root
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: mariadb
+      STOCKTRACKER_DB_URL: jdbc:mariadb://mariadb:3306/stocktracker
+      STOCKTRACKER_DB_USERNAME: stocktracker
+      STOCKTRACKER_DB_PASSWORD: stocktracker
+    ports:
+      - "8080:8080"
+
+volumes:
+  mariadb-data:
