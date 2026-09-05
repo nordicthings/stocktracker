@@ -8,6 +8,7 @@ data class InventoryItemView(
     val targetStock: Int,
     val note: String?,
     val isBelowMinimumStock: Boolean,
+    val isBelowTargetStock: Boolean,
 )
 
 data class ShoppingListItemView(
@@ -18,9 +19,12 @@ data class ShoppingListItemView(
     val targetStock: Int,
     val recommendedPurchaseQuantity: Int,
     val note: String?,
+    val isBelowMinimumStock: Boolean,
 )
 
 data class InventoryOverviewView(
     val items: List<InventoryItemView>,
     val hasPurchaseNeeds: Boolean,
+    val belowMinimumStockCount: Int,
+    val belowTargetStockCount: Int,
 )

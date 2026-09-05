@@ -98,6 +98,8 @@ class InventoryService(
         return InventoryOverviewView(
             items = items,
             hasPurchaseNeeds = allItems.any { item -> item.isBelowMinimumStock },
+            belowMinimumStockCount = allItems.count { item -> item.isBelowMinimumStock },
+            belowTargetStockCount = allItems.count { item -> item.isBelowTargetStock },
         )
     }
 
@@ -114,6 +116,7 @@ class InventoryService(
                     targetStock = item.targetStock.value,
                     recommendedPurchaseQuantity = item.recommendedPurchaseQuantity,
                     note = item.note?.value,
+                    isBelowMinimumStock = item.currentStock.value < item.minimumStock.value,
                 )
             }
 
@@ -170,5 +173,6 @@ class InventoryService(
         targetStock = targetStock.value,
         note = note?.value,
         isBelowMinimumStock = isBelowMinimumStock,
+        isBelowTargetStock = isBelowTargetStock,
     )
 }

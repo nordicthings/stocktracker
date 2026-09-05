@@ -161,7 +161,7 @@ class InventoryController(
         @PathVariable itemId: String,
         @RequestParam(defaultValue = "1") quantity: String,
         redirectAttributes: RedirectAttributes,
-    ): String = handleInventoryAction(redirectAttributes, "Istbestand wurde verringert.") {
+    ): String = handleInventoryAction(redirectAttributes, successMessage = null) {
         decreaseCurrentStock.decreaseCurrentStock(ChangeCurrentStockCommand(itemId, quantity.toRequiredInt("Menge")))
     }
 
@@ -169,7 +169,7 @@ class InventoryController(
     fun fillToTarget(
         @PathVariable itemId: String,
         redirectAttributes: RedirectAttributes,
-    ): String = handleInventoryAction(redirectAttributes, "Istbestand wurde auf Sollbestand gesetzt.") {
+    ): String = handleInventoryAction(redirectAttributes, successMessage = null) {
         setStockToTarget.setStockToTarget(itemId)
     }
 

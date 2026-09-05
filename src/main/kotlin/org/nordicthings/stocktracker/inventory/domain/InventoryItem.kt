@@ -21,6 +21,9 @@ class InventoryItem private constructor(
     val isBelowMinimumStock: Boolean
         get() = currentStock.value < minimumStock.value
 
+    val isBelowTargetStock: Boolean
+        get() = currentStock.value < targetStock.value
+
     val recommendedPurchaseQuantity: Int
         get() = (targetStock.value - currentStock.value).coerceAtLeast(0)
 
@@ -67,7 +70,7 @@ class InventoryItem private constructor(
     }
 
     fun toShoppingListItem(): ShoppingListItem? =
-        if (isBelowMinimumStock) {
+        if (isBelowTargetStock) {
             ShoppingListItem(
                 itemId = id,
                 itemName = name,
@@ -76,6 +79,7 @@ class InventoryItem private constructor(
                 targetStock = targetStock,
                 recommendedPurchaseQuantity = recommendedPurchaseQuantity,
                 note = note,
+                isBelowMinimumStock = isBelowMinimumStock,
             )
         } else {
             null

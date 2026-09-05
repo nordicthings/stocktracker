@@ -66,6 +66,17 @@ class InventoryItemTest {
     }
 
     @Test
+    fun `detects item below target stock`() {
+        val item = createItem(
+            currentStock = CurrentStock.of(4),
+            minimumStock = MinimumStock.of(3),
+            targetStock = TargetStock.of(5),
+        )
+
+        assertTrue(item.isBelowTargetStock)
+    }
+
+    @Test
     fun `calculates recommended purchase quantity up to target stock`() {
         val item = createItem(
             currentStock = CurrentStock.of(2),
@@ -182,9 +193,9 @@ class InventoryItemTest {
     }
 
     @Test
-    fun `creates shopping list item only when below minimum stock`() {
+    fun `creates shopping list item when below target stock`() {
         val item = createItem(
-            currentStock = CurrentStock.of(2),
+            currentStock = CurrentStock.of(3),
             minimumStock = MinimumStock.of(3),
             targetStock = TargetStock.of(5),
             note = ItemNote.optional("Bio bevorzugt."),
@@ -195,15 +206,17 @@ class InventoryItemTest {
         assertNotNull(shoppingListItem)
         assertEquals(item.id, shoppingListItem.itemId)
         assertEquals(item.name, shoppingListItem.itemName)
-        assertEquals(3, shoppingListItem.recommendedPurchaseQuantity)
+        assertEquals(2, shoppingListItem.recommendedPurchaseQuantity)
+        assertFalse(shoppingListItem.isBelowMinimumStock)
         assertEquals(item.note, shoppingListItem.note)
     }
 
     @Test
-    fun `does not create shopping list item when not below minimum stock`() {
+    fun `does not create shopping list item when target stock is reached`() {
         val item = createItem(
-            currentStock = CurrentStock.of(3),
+            currentStock = CurrentStock.of(5),
             minimumStock = MinimumStock.of(3),
+            targetStock = TargetStock.of(5),
         )
 
         assertNull(item.toShoppingListItem())

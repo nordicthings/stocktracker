@@ -14,25 +14,25 @@
             <p class="eyebrow">Nordic Things</p>
             <h1>Vorratsverwaltung</h1>
         </div>
-        <div class="purchase-alert" th:if="${inventoryOverview.hasPurchaseNeeds}">
-            <strong th:text="${shoppingList.size()}">0</strong>
-            <span th:text="${shoppingList.size() == 1 ? 'Artikel nachkaufen' : 'Artikel nachkaufen'}">Artikel nachkaufen</span>
-        </div>
+        <a class="stock-alert critical"
+           th:if="${activeTab != 'shopping' && inventoryOverview.belowMinimumStockCount > 0}"
+           th:href="@{/(tab='shopping', searchTerm=${searchTerm}, inventorySort=${inventorySort}, shoppingSort=${shoppingSort})}"
+           th:text="${inventoryOverview.belowMinimumStockCount + ' Artikel unter Mindestbestand'}">
+            1 Artikel unter Mindestbestand
+        </a>
+        <a class="stock-alert warning"
+           th:if="${activeTab != 'shopping' && inventoryOverview.belowMinimumStockCount == 0 && inventoryOverview.belowTargetStockCount > 0}"
+           th:href="@{/(tab='shopping', searchTerm=${searchTerm}, inventorySort=${inventorySort}, shoppingSort=${shoppingSort})}"
+           th:text="${inventoryOverview.belowTargetStockCount + ' Artikel unter Sollbestand'}">
+            1 Artikel unter Sollbestand
+        </a>
+        <a class="secondary-action" th:if="${activeTab == 'shopping'}" th:href="@{/}">
+            Zurück zur Bestandsliste
+        </a>
     </header>
 
     <section class="message success" th:if="${successMessage}" th:text="${successMessage}"></section>
     <section class="message error" th:if="${errorMessage}" th:text="${errorMessage}"></section>
-
-    <nav class="tabs" aria-label="Ansichten">
-        <a th:classappend="${activeTab == 'inventory'} ? 'active'"
-           th:href="@{/(tab='inventory', searchTerm=${searchTerm}, inventorySort=${inventorySort}, shoppingSort=${shoppingSort})}">
-            Istbestandspflege
-        </a>
-        <a th:classappend="${activeTab == 'shopping'} ? 'active'"
-           th:href="@{/(tab='shopping', searchTerm=${searchTerm}, inventorySort=${inventorySort}, shoppingSort=${shoppingSort})}">
-            Einkaufsliste
-        </a>
-    </nav>
 
     <section th:if="${activeTab == 'inventory'}" class="workspace" id="inventory-workspace">
         <form class="quick-entry-row" method="post" th:action="@{/items}" aria-label="Artikel erfassen">
@@ -106,10 +106,10 @@
                         <div class="table-actions">
                             <form method="post" th:action="@{/items/{itemId}/stock/decrease(itemId=${item.id})}">
                                 <input type="hidden" name="quantity" value="1">
-                                <button type="submit">Entnehmen</button>
+                                <button type="submit" th:disabled="${item.currentStock == 0}">Entnehmen</button>
                             </form>
                             <form method="post" th:action="@{/items/{itemId}/stock/fill-to-target(itemId=${item.id})}">
-                                <button type="submit">Auf Sollbestand</button>
+                                <button type="submit" th:disabled="${!item.isBelowTargetStock}">Auf Sollbestand</button>
                             </form>
                             <a class="secondary-action" th:href="@{/items/{itemId}(itemId=${item.id})}">Bearbeiten</a>
                         </div>
@@ -121,6 +121,7 @@
     </section>
 
     <section th:if="${activeTab == 'shopping'}" class="workspace" id="shopping-workspace">
+        <h2>Einkaufsliste</h2>
         <form class="toolbar" method="get" th:action="@{/}">
             <input type="hidden" name="tab" value="shopping">
             <input type="hidden" name="searchTerm" th:value="${searchTerm}">
@@ -140,12 +141,13 @@
             <button type="submit">Anzeigen</button>
         </form>
 
-        <p class="empty-state" th:if="${shoppingList.isEmpty()}">Aktuell muss nichts nachgekauft werden.</p>
+        <p class="empty-state" th:if="${shoppingList.isEmpty()}">Aktuell muss nichts aufgefüllt werden.</p>
 
         <section class="shopping-list" th:if="${!shoppingList.isEmpty()}">
-            <article class="shopping-row" th:each="item : ${shoppingList}">
+            <article class="shopping-row" th:each="item : ${shoppingList}" th:classappend="${item.isBelowMinimumStock} ? 'critical'">
                 <div>
                     <h2 th:text="${item.itemName}">Reis</h2>
+                    <span class="status" th:if="${item.isBelowMinimumStock}">Unter Mindestbestand</span>
                     <p th:if="${item.note}" th:text="${item.note}">Hinweis</p>
                 </div>
                 <dl>

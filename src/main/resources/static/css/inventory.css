@@ -33,7 +33,7 @@ textarea {
 }
 
 button,
-.tabs a,
+.stock-alert,
 .secondary-action {
     min-height: 2.5rem;
     border: 1px solid var(--accent);
@@ -46,15 +46,26 @@ button,
 }
 
 button:hover,
-.tabs a:hover,
+.stock-alert:hover,
 .secondary-action:hover {
     background: var(--accent-strong);
 }
 
+button:disabled {
+    border-color: var(--line);
+    background: var(--surface-muted);
+    color: var(--muted);
+    cursor: not-allowed;
+}
+
 button.danger {
     border-color: var(--danger);
-    background: #fff;
-    color: var(--danger);
+    background: var(--danger);
+    color: #fff;
+}
+
+button.danger:hover {
+    background: #7f2424;
 }
 
 .page-shell {
@@ -97,7 +108,6 @@ h2 {
     margin-bottom: 0.25rem;
 }
 
-.purchase-alert,
 .message,
 .quick-entry-row,
 .inventory-table-wrap,
@@ -108,19 +118,6 @@ h2 {
     border-radius: 8px;
     background: var(--surface);
     box-shadow: var(--shadow);
-}
-
-.purchase-alert {
-    display: flex;
-    gap: 0.45rem;
-    align-items: baseline;
-    padding: 0.8rem 1rem;
-    background: var(--warning-bg);
-    border-color: var(--warning-line);
-}
-
-.purchase-alert strong {
-    font-size: 1.8rem;
 }
 
 .message {
@@ -138,30 +135,37 @@ h2 {
     background: #fff0f0;
 }
 
-.tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-    margin: 1.25rem 0;
-}
-
-.tabs a {
-    background: #fff;
-    color: var(--accent);
-}
-
+.stock-alert,
 .secondary-action {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: #fff;
-    color: var(--accent);
     white-space: nowrap;
 }
 
-.tabs a.active {
-    background: var(--accent);
+.stock-alert.warning {
+    border-color: var(--warning-line);
+    background: var(--warning-bg);
+    color: #694b00;
+}
+
+.stock-alert.warning:hover {
+    background: #ffe8a3;
+}
+
+.stock-alert.critical {
+    border-color: var(--danger);
+    background: var(--danger);
     color: #fff;
+}
+
+.stock-alert.critical:hover {
+    background: #7f2424;
+}
+
+.secondary-action {
+    background: #fff;
+    color: var(--accent);
 }
 
 .workspace {
@@ -290,6 +294,11 @@ textarea {
 }
 
 .inventory-table tr.critical {
+    background: #fffdf7;
+}
+
+.shopping-row.critical {
+    border-color: var(--warning-line);
     background: #fffdf7;
 }
 

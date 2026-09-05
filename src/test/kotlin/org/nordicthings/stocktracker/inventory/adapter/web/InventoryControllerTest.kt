@@ -51,6 +51,8 @@ class InventoryControllerTest @Autowired constructor(
         assertContains(response.body(), "aria-label=\"Artikel erfassen\"")
         assertContains(response.body(), "Hinzufügen")
         assertFalse(response.body().contains("<summary>Artikel erfassen</summary>"))
+        assertFalse(response.body().contains("Istbestandspflege"))
+        assertFalse(response.body().contains("<nav class=\"tabs\""))
         assertFalse(response.body().contains("name=\"note\""))
         assertContains(response.body(), "Noch keine Artikel vorhanden.")
     }
@@ -71,6 +73,7 @@ class InventoryControllerTest @Autowired constructor(
         assertFalse(createResponse.body().contains("Artikel wurde angelegt."))
         assertContains(createResponse.body(), "Nudeln (500g)")
         assertContains(createResponse.body(), "Nachkaufbedarf")
+        assertContains(createResponse.body(), "1 Artikel unter Mindestbestand")
         assertContains(createResponse.body(), "<th scope=\"col\">Artikel</th>")
         assertContains(createResponse.body(), "<th scope=\"col\">Istbestand</th>")
         assertContains(createResponse.body(), "<th scope=\"col\">Sollbestand</th>")
@@ -86,9 +89,35 @@ class InventoryControllerTest @Autowired constructor(
 
         assertEquals(200, shoppingResponse.statusCode())
         assertContains(shoppingResponse.body(), "Einkaufsliste")
+        assertContains(shoppingResponse.body(), "Zurück zur Bestandsliste")
+        assertContains(shoppingResponse.body(), "Unter Mindestbestand")
         assertContains(shoppingResponse.body(), "Einkaufsmenge")
         assertContains(shoppingResponse.body(), "Auf Sollbestand")
         assertContains(shoppingResponse.body(), ">4<")
+    }
+
+    @Test
+    fun `links to shopping list when items are below target stock`() {
+        val response = post(
+            "/items",
+            form(
+                "name" to "Salz",
+                "currentStock" to "3",
+                "minimumStock" to "3",
+                "targetStock" to "5",
+            ),
+        )
+
+        assertEquals(200, response.statusCode())
+        assertContains(response.body(), "1 Artikel unter Sollbestand")
+        assertFalse(response.body().contains("1 Artikel unter Mindestbestand"))
+
+        val shoppingResponse = get("/?tab=shopping")
+
+        assertEquals(200, shoppingResponse.statusCode())
+        assertContains(shoppingResponse.body(), "Salz")
+        assertContains(shoppingResponse.body(), ">2<")
+        assertFalse(shoppingResponse.body().contains("Unter Mindestbestand"))
     }
 
     @Test
@@ -110,8 +139,62 @@ class InventoryControllerTest @Autowired constructor(
         )
 
         assertEquals(200, response.statusCode())
-        assertContains(response.body(), "Istbestand wurde verringert.")
+        assertFalse(response.body().contains("Istbestand wurde verringert."))
         assertContains(response.body(), ">1<")
+    }
+
+    @Test
+    fun `fills current stock to target without rendering success message`() {
+        post(
+            "/items",
+            form(
+                "name" to "Tomaten",
+                "currentStock" to "1",
+                "minimumStock" to "2",
+                "targetStock" to "5",
+            ),
+        )
+        val itemId = jpaRepository.findAll().single().id
+
+        val response = post("/items/$itemId/stock/fill-to-target", "")
+
+        assertEquals(200, response.statusCode())
+        assertFalse(response.body().contains("Istbestand wurde auf Sollbestand gesetzt."))
+        assertContains(response.body(), ">5<")
+    }
+
+    @Test
+    fun `disables stock action buttons when action is not applicable`() {
+        val emptyStockResponse = post(
+            "/items",
+            form(
+                "name" to "Mehl",
+                "currentStock" to "0",
+                "minimumStock" to "1",
+                "targetStock" to "3",
+            ),
+        )
+
+        assertEquals(200, emptyStockResponse.statusCode())
+        assertContains(emptyStockResponse.body(), "<button type=\"submit\" disabled=\"disabled\">Entnehmen</button>")
+
+        jpaRepository.deleteAll()
+
+        val targetReachedResponse = post(
+            "/items",
+            form(
+                "name" to "Zucker",
+                "currentStock" to "3",
+                "minimumStock" to "1",
+                "targetStock" to "3",
+            ),
+        )
+
+        assertEquals(200, targetReachedResponse.statusCode())
+        assertContains(
+            targetReachedResponse.body(),
+            "<button type=\"submit\" disabled=\"disabled\">Auf Sollbestand</button>",
+        )
     }
 
     @Test
@@ -150,7 +233,9 @@ class InventoryControllerTest @Autowired constructor(
         assertContains(detailResponse.body(), "Istbestand")
         assertContains(detailResponse.body(), "Sollbestand")
         assertContains(detailResponse.body(), "Änderungen speichern")
+        assertContains(detailResponse.body(), ">Zurück</a>")
         assertContains(detailResponse.body(), "Löschen")
+        assertFalse(detailResponse.body().contains("Zur Istbestandspflege"))
         assertFalse(detailResponse.body().contains("Istbestand speichern"))
 
         val editResponse = post(

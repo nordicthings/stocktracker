@@ -19,6 +19,7 @@ class InventoryServiceTest {
         assertEquals("Nudeln (500g)", item.name)
         assertEquals(2, item.currentStock)
         assertTrue(item.isBelowMinimumStock)
+        assertTrue(item.isBelowTargetStock)
         assertEquals(item.id, repository.findAll().single().id.value)
     }
 
@@ -164,6 +165,8 @@ class InventoryServiceTest {
 
         assertEquals(listOf("Nudeln (500g)"), overview.items.map { item -> item.name })
         assertTrue(overview.hasPurchaseNeeds)
+        assertEquals(1, overview.belowMinimumStockCount)
+        assertEquals(2, overview.belowTargetStockCount)
     }
 
     @Test
@@ -196,7 +199,7 @@ class InventoryServiceTest {
     }
 
     @Test
-    fun `derives and sorts the shopping list`() {
+    fun `derives and sorts the shopping list from items below target stock`() {
         val repository = FakeInventoryItemRepository()
         val service = InventoryService(repository)
         service.create(createCommand(name = "Nudeln", currentStock = 2, minimumStock = 3, targetStock = 5, note = "Bio"))
@@ -207,9 +210,10 @@ class InventoryServiceTest {
             ShoppingListQuery(ShoppingListSort.RECOMMENDED_PURCHASE_QUANTITY_DESCENDING),
         )
 
-        assertEquals(listOf("Reis", "Nudeln"), shoppingList.map { item -> item.itemName })
-        assertEquals(listOf(7, 3), shoppingList.map { item -> item.recommendedPurchaseQuantity })
-        assertEquals("Bio", shoppingList.last().note)
+        assertEquals(listOf("Reis", "Nudeln", "Salz"), shoppingList.map { item -> item.itemName })
+        assertEquals(listOf(7, 3, 2), shoppingList.map { item -> item.recommendedPurchaseQuantity })
+        assertEquals(listOf(true, true, false), shoppingList.map { item -> item.isBelowMinimumStock })
+        assertEquals("Bio", shoppingList[1].note)
     }
 
     private fun createCommand(

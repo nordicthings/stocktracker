@@ -11,6 +11,7 @@ class ShoppingListItem(
     val targetStock: TargetStock,
     val recommendedPurchaseQuantity: Int,
     val note: ItemNote?,
+    val isBelowMinimumStock: Boolean,
 ) {
 
     init {
