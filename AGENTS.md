@@ -60,6 +60,10 @@ Die fachlichen Anforderungen stehen in `docs/requirements.md` und sind bei Umset
 - Vor Architektur-, Technologie- oder wesentlichen Funktionsentscheidungen mehrere Optionen mit Vor- und Nachteilen vorlegen und Zustimmung einholen
 - Für neue Funktionen passende Tests und Prüfung vor Übergabe
 
+## Quellcode-Vorgaben
+
+- unused imports entfernen
+
 ## Teststrategie
 
 - Fachliche Funktionalitäten im Domain Model werden mit Unit-Test abgesichert.
