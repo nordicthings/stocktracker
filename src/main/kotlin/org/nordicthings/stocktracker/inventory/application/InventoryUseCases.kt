@@ -32,6 +32,10 @@ interface SetStockToTargetUseCase {
     fun setStockToTarget(itemId: String): InventoryItemView
 }
 
+interface ViewInventoryItemUseCase {
+    fun viewInventoryItem(itemId: String): InventoryItemView
+}
+
 interface ViewInventoryItemsUseCase {
     fun viewInventoryItems(query: InventoryItemsQuery = InventoryItemsQuery()): InventoryOverviewView
 }

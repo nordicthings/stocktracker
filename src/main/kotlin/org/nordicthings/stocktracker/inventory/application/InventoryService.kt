@@ -20,6 +20,7 @@ class InventoryService(
     DecreaseCurrentStockUseCase,
     RemoveOneItemUseCase,
     SetStockToTargetUseCase,
+    ViewInventoryItemUseCase,
     ViewInventoryItemsUseCase,
     ViewShoppingListUseCase {
 
@@ -48,6 +49,7 @@ class InventoryService(
         val savedItem = repository.save(
             item.edit(
                 name = name,
+                currentStock = CurrentStock.of(command.currentStock),
                 minimumStock = MinimumStock.of(command.minimumStock),
                 targetStock = TargetStock.of(command.targetStock),
                 note = ItemNote.optional(command.note),
@@ -80,6 +82,9 @@ class InventoryService(
 
     override fun setStockToTarget(itemId: String): InventoryItemView =
         saveUpdatedItem(itemId) { item -> item.setStockToTarget() }
+
+    override fun viewInventoryItem(itemId: String): InventoryItemView =
+        getItem(itemId).toView()
 
     override fun viewInventoryItems(query: InventoryItemsQuery): InventoryOverviewView {
         val allItems = repository.findAll()

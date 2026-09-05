@@ -34,7 +34,7 @@ class InventoryServiceTest {
     }
 
     @Test
-    fun `edits item data while preserving current stock`() {
+    fun `edits item data including current stock`() {
         val repository = FakeInventoryItemRepository()
         val service = InventoryService(repository)
         val createdItem = service.create(createCommand(currentStock = 2))
@@ -43,6 +43,7 @@ class InventoryServiceTest {
             EditInventoryItemCommand(
                 itemId = createdItem.id,
                 name = "Spaghetti (500g)",
+                currentStock = 3,
                 minimumStock = 4,
                 targetStock = 6,
                 note = "Vollkorn",
@@ -51,7 +52,7 @@ class InventoryServiceTest {
 
         assertEquals(createdItem.id, updatedItem.id)
         assertEquals("Spaghetti (500g)", updatedItem.name)
-        assertEquals(2, updatedItem.currentStock)
+        assertEquals(3, updatedItem.currentStock)
         assertEquals(4, updatedItem.minimumStock)
         assertEquals(6, updatedItem.targetStock)
         assertEquals("Vollkorn", updatedItem.note)
@@ -67,6 +68,7 @@ class InventoryServiceTest {
             EditInventoryItemCommand(
                 itemId = createdItem.id,
                 name = "  nudeln   (500G)  ",
+                currentStock = 2,
                 minimumStock = 3,
                 targetStock = 5,
                 note = null,
@@ -85,7 +87,7 @@ class InventoryServiceTest {
 
         assertFailsWith<DuplicateItemNameException> {
             service.edit(
-                EditInventoryItemCommand(pasta.id, "reis (1KG)", 3, 5, null),
+                EditInventoryItemCommand(pasta.id, "reis (1KG)", 2, 3, 5, null),
             )
         }
     }
@@ -123,6 +125,19 @@ class InventoryServiceTest {
                 SetCurrentStockCommand("550e8400-e29b-41d4-a716-446655440000", 4),
             )
         }
+    }
+
+    @Test
+    fun `views a single inventory item`() {
+        val repository = FakeInventoryItemRepository()
+        val service = InventoryService(repository)
+        val item = service.create(createCommand(name = "Haferflocken", currentStock = 4))
+
+        val view = service.viewInventoryItem(item.id)
+
+        assertEquals(item.id, view.id)
+        assertEquals("Haferflocken", view.name)
+        assertEquals(4, view.currentStock)
     }
 
     @Test

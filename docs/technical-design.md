@@ -7,13 +7,13 @@ Version 1 wird als ein Fachmodul `inventory` umgesetzt.
 Das Modul `inventory` umfasst:
 
 - Artikelverwaltung
-- Bestandspflege
+- Istbestandspflege
 - Mindestbestandsprüfung
-- Zielbestandslogik
+- Sollbestandslogik
 - Ableitung der Einkaufsliste
 - Suche und Sortierung für Vorratsliste und Einkaufsliste
 
-Die Einkaufsliste wird in Version 1 nicht als eigenes Fachmodul umgesetzt, weil sie ausschließlich aus den Beständen des Vorrats abgeleitet wird.
+Die Einkaufsliste wird in Version 1 nicht als eigenes Fachmodul umgesetzt, weil sie ausschließlich aus den Istbeständen des Vorrats abgeleitet wird.
 
 ## Package-Struktur
 
@@ -86,9 +86,9 @@ Das Aggregat trägt:
 
 - Identität
 - Artikelname
-- aktueller Bestand
+- Istbestand
 - Mindestbestand
-- Zielbestand
+- Sollbestand
 - optionale Notiz
 
 Die Einkaufsliste ist kein eigenes Aggregat. Sie wird als read-only Sicht aus den gespeicherten `InventoryItem`-Aggregaten abgeleitet.
@@ -116,11 +116,11 @@ Das Domain Model wird immutable modelliert.
 
 Beispiele:
 
-- Bestand direkt setzen
-- Bestand erhöhen
-- Bestand verringern
+- Istbestand direkt setzen
+- Istbestand erhöhen
+- Istbestand verringern
 - ein Stück entnehmen
-- auf Zielbestand setzen
+- auf Sollbestand setzen
 - Artikeldaten bearbeiten
 
 Die Änderungsmethoden kapseln die fachlichen Regeln. Ein öffentlicher `copy`-Mechanismus, der Regeln umgehen könnte, wird vermieden.
@@ -239,12 +239,12 @@ Vorgesehene Spalten:
 
 Die Web-Schicht wird für Version 1 entlang der beiden Tabs geschnitten:
 
-- `InventoryItemController` für den Tab "Bestandspflege"
+- `InventoryItemController` für den Tab "Istbestandspflege"
 - `ShoppingListController` für den Tab "Einkaufsliste"
 
 Die Tabs werden als zwei eigene serverseitig gerenderte Routen umgesetzt:
 
-- `/inventory/items` für die Bestandspflege
+- `/inventory/items` für die Istbestandspflege
 - `/inventory/shopping-list` für die Einkaufsliste
 
 Eine optionale Root-Route kann auf `/inventory/items` weiterleiten.
@@ -253,13 +253,13 @@ Der `InventoryItemController` verantwortet:
 
 - Anzeige der Vorratsliste
 - Suche und Sortierung der Vorratsliste
-- Formulare zum Erfassen und Bearbeiten von Artikeln
+- Formulare zum Erfassen und eine Detailseite zum Bearbeiten von Artikeln
 - Löschen von Artikeln nach Bestätigung
-- Bestand direkt setzen
-- Bestand erhöhen
-- Bestand verringern
+- Istbestand direkt setzen
+- Istbestand erhöhen
+- Istbestand verringern
 - ein Stück entnehmen
-- auf Zielbestand setzen
+- auf Sollbestand setzen
 
 Der `ShoppingListController` verantwortet:
 
@@ -269,7 +269,7 @@ Der `ShoppingListController` verantwortet:
 
 Beide Controller greifen ausschließlich auf die passenden Application-Use-Case-Interfaces zu und nicht direkt auf Domain oder Persistence-Adapter.
 
-HTMX wird in Version 1 gezielt für kleine Interaktionen eingesetzt, insbesondere für schnelle Bestandsänderungen wie `+1`, `-1`, "ein Stück entnehmen" und "auf Zielbestand setzen".
+HTMX wird in Version 1 gezielt für kleine Interaktionen eingesetzt, insbesondere für schnelle Istbestandsänderungen wie `+1`, `-1`, "ein Stück entnehmen" und "auf Sollbestand setzen".
 
 Die Grundnavigation und die beiden Tabs bleiben klassische serverseitig gerenderte Routen. Anlegen, Bearbeiten, Löschen, Suche und Sortierung dürfen zunächst klassisch per Request/Response umgesetzt werden und können später bei Bedarf fragmentbasiert verfeinert werden.
 
@@ -287,7 +287,7 @@ Domain-Tests decken insbesondere ab:
 - `InventoryItem`
 - Nachkaufpflicht
 - empfohlene Einkaufsmenge
-- Bestandsoperationen
+- Istbestandsoperationen
 
 Application-Tests decken insbesondere `InventoryService` mit einem Mock- oder Fake-Repository ab:
 
@@ -295,7 +295,7 @@ Application-Tests decken insbesondere `InventoryService` mit einem Mock- oder Fa
 - Dublettenprüfung über normalisierten Artikelnamen
 - Artikel bearbeiten
 - Artikel löschen
-- Bestand setzen, erhöhen und verringern
+- Istbestand setzen, erhöhen und verringern
 - Einkaufsliste ableiten
 - Suche und Sortierung
 
@@ -317,8 +317,8 @@ Vorgesehene Verantwortlichkeiten:
 - `ItemName` stellt sicher, dass der Artikelname nicht leer ist.
 - `ItemName` bewahrt den Anzeigenamen und stellt zusätzlich einen normalisierten Vergleichswert bereit.
 - `ItemName` normalisiert für den Vergleich führende und nachfolgende Leerzeichen, Groß- und Kleinschreibung sowie mehrfach vorkommende Leerzeichen innerhalb des Namens.
-- `CurrentStock` stellt sicher, dass der aktuelle Bestand eine nicht-negative ganze Zahl ist.
+- `CurrentStock` stellt sicher, dass der Istbestand eine nicht-negative ganze Zahl ist.
 - `MinimumStock` stellt sicher, dass der Mindestbestand mindestens 1 ist.
-- `TargetStock` stellt sicher, dass der Zielbestand mindestens 1 ist.
-- `InventoryItem` stellt sicher, dass der Zielbestand größer oder gleich dem Mindestbestand ist.
-- `InventoryItem` stellt sicher, dass Bestandsverringerungen nicht zu einem negativen aktuellen Bestand führen.
+- `TargetStock` stellt sicher, dass der Sollbestand mindestens 1 ist.
+- `InventoryItem` stellt sicher, dass der Sollbestand größer oder gleich dem Mindestbestand ist.
+- `InventoryItem` stellt sicher, dass Istbestandsverringerungen nicht zu einem negativen Istbestand führen.

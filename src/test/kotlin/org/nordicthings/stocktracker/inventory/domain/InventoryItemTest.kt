@@ -162,18 +162,19 @@ class InventoryItemTest {
     }
 
     @Test
-    fun `edits item data while keeping id and current stock`() {
+    fun `edits item data while keeping id`() {
         val item = createItem(currentStock = CurrentStock.of(2))
 
         val updatedItem = item.edit(
             name = ItemName.of("Spaghetti (500g)"),
+            currentStock = CurrentStock.of(3),
             minimumStock = MinimumStock.of(4),
             targetStock = TargetStock.of(6),
             note = ItemNote.optional("Nur Vollkorn."),
         )
 
         assertEquals(item.id, updatedItem.id)
-        assertEquals(CurrentStock.of(2), updatedItem.currentStock)
+        assertEquals(CurrentStock.of(3), updatedItem.currentStock)
         assertEquals(ItemName.of("Spaghetti (500g)"), updatedItem.name)
         assertEquals(MinimumStock.of(4), updatedItem.minimumStock)
         assertEquals(TargetStock.of(6), updatedItem.targetStock)

@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Vorratsverwaltung</title>
+    <link rel="stylesheet" th:href="@{/css/inventory.css}">
+    <script defer th:src="@{/webjars/htmx.org/dist/htmx.min.js}"></script>
+</head>
+<body hx-boost="true">
+<main class="page-shell">
+    <header class="page-header">
+        <div>
+            <p class="eyebrow">Nordic Things</p>
+            <h1>Vorratsverwaltung</h1>
+        </div>
+        <div class="purchase-alert" th:if="${inventoryOverview.hasPurchaseNeeds}">
+            <strong th:text="${shoppingList.size()}">0</strong>
+            <span th:text="${shoppingList.size() == 1 ? 'Artikel nachkaufen' : 'Artikel nachkaufen'}">Artikel nachkaufen</span>
+        </div>
+    </header>
+
+    <section class="message success" th:if="${successMessage}" th:text="${successMessage}"></section>
+    <section class="message error" th:if="${errorMessage}" th:text="${errorMessage}"></section>
+
+    <nav class="tabs" aria-label="Ansichten">
+        <a th:classappend="${activeTab == 'inventory'} ? 'active'"
+           th:href="@{/(tab='inventory', searchTerm=${searchTerm}, inventorySort=${inventorySort}, shoppingSort=${shoppingSort})}">
+            Istbestandspflege
+        </a>
+        <a th:classappend="${activeTab == 'shopping'} ? 'active'"
+           th:href="@{/(tab='shopping', searchTerm=${searchTerm}, inventorySort=${inventorySort}, shoppingSort=${shoppingSort})}">
+            Einkaufsliste
+        </a>
+    </nav>
+
+    <section th:if="${activeTab == 'inventory'}" class="workspace" id="inventory-workspace">
+        <form class="quick-entry-row" method="post" th:action="@{/items}" aria-label="Artikel erfassen">
+            <label>
+                <span>Name</span>
+                <input name="name" required maxlength="200" autocomplete="off">
+            </label>
+            <label>
+                <span>Istbestand</span>
+                <input name="currentStock" required inputmode="numeric" pattern="[0-9]+" min="0" type="number">
+            </label>
+            <label>
+                <span>Mindestbestand</span>
+                <input name="minimumStock" required inputmode="numeric" pattern="[0-9]+" min="1" type="number">
+            </label>
+            <label>
+                <span>Sollbestand</span>
+                <input name="targetStock" required inputmode="numeric" pattern="[0-9]+" min="1" type="number">
+            </label>
+            <button type="submit">Hinzufügen</button>
+        </form>
+
+        <form class="toolbar" method="get" th:action="@{/}">
+            <input type="hidden" name="tab" value="inventory">
+            <label>
+                <span>Suche</span>
+                <input name="searchTerm" th:value="${searchTerm}" autocomplete="off" placeholder="Artikelname">
+            </label>
+            <label>
+                <span>Sortierung</span>
+                <select name="inventorySort">
+                    <option th:each="sort : ${inventorySorts}"
+                            th:value="${sort}"
+                            th:selected="${sort == inventorySort}"
+                            th:text="${sort.name() == 'NAME' ? 'Artikelname' :
+                                sort.name() == 'CRITICAL_FIRST' ? 'kritische Artikel zuerst' :
+                                sort.name() == 'CURRENT_STOCK_ASCENDING' ? 'Istbestand aufsteigend' :
+                                'Istbestand absteigend'}">
+                    </option>
+                </select>
+            </label>
+            <input type="hidden" name="shoppingSort" th:value="${shoppingSort}">
+            <button type="submit">Anzeigen</button>
+        </form>
+
+        <p class="empty-state" th:if="${inventoryOverview.items.isEmpty()}">Noch keine Artikel vorhanden.</p>
+
+        <div class="inventory-table-wrap" th:if="${!inventoryOverview.items.isEmpty()}">
+            <table class="inventory-table">
+                <thead>
+                <tr>
+                    <th scope="col">Artikel</th>
+                    <th scope="col">Istbestand</th>
+                    <th scope="col">Mindestbestand</th>
+                    <th scope="col">Sollbestand</th>
+                    <th scope="col">Aktionen</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="item : ${inventoryOverview.items}" th:classappend="${item.isBelowMinimumStock} ? 'critical'">
+                    <td>
+                        <div class="item-name-cell">
+                            <a th:href="@{/items/{itemId}(itemId=${item.id})}" th:text="${item.name}">Nudeln</a>
+                            <span class="status" th:if="${item.isBelowMinimumStock}">Nachkaufbedarf</span>
+                        </div>
+                    </td>
+                    <td th:text="${item.currentStock}">0</td>
+                    <td th:text="${item.minimumStock}">0</td>
+                    <td th:text="${item.targetStock}">0</td>
+                    <td>
+                        <div class="table-actions">
+                            <form method="post" th:action="@{/items/{itemId}/stock/decrease(itemId=${item.id})}">
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit">Entnehmen</button>
+                            </form>
+                            <form method="post" th:action="@{/items/{itemId}/stock/fill-to-target(itemId=${item.id})}">
+                                <button type="submit">Auf Sollbestand</button>
+                            </form>
+                            <a class="secondary-action" th:href="@{/items/{itemId}(itemId=${item.id})}">Bearbeiten</a>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section th:if="${activeTab == 'shopping'}" class="workspace" id="shopping-workspace">
+        <form class="toolbar" method="get" th:action="@{/}">
+            <input type="hidden" name="tab" value="shopping">
+            <input type="hidden" name="searchTerm" th:value="${searchTerm}">
+            <input type="hidden" name="inventorySort" th:value="${inventorySort}">
+            <label>
+                <span>Sortierung</span>
+                <select name="shoppingSort">
+                    <option th:each="sort : ${shoppingSorts}"
+                            th:value="${sort}"
+                            th:selected="${sort == shoppingSort}"
+                            th:text="${sort.name() == 'NAME' ? 'Artikelname' :
+                                sort.name() == 'RECOMMENDED_PURCHASE_QUANTITY_DESCENDING' ? 'größte Einkaufsmenge zuerst' :
+                                'kleinste Einkaufsmenge zuerst'}">
+                    </option>
+                </select>
+            </label>
+            <button type="submit">Anzeigen</button>
+        </form>
+
+        <p class="empty-state" th:if="${shoppingList.isEmpty()}">Aktuell muss nichts nachgekauft werden.</p>
+
+        <section class="shopping-list" th:if="${!shoppingList.isEmpty()}">
+            <article class="shopping-row" th:each="item : ${shoppingList}">
+                <div>
+                    <h2 th:text="${item.itemName}">Reis</h2>
+                    <p th:if="${item.note}" th:text="${item.note}">Hinweis</p>
+                </div>
+                <dl>
+                    <div>
+                        <dt>Istbestand</dt>
+                        <dd th:text="${item.currentStock}">0</dd>
+                    </div>
+                    <div>
+                        <dt>Mindestbestand</dt>
+                        <dd th:text="${item.minimumStock}">0</dd>
+                    </div>
+                    <div>
+                        <dt>Einkaufsmenge</dt>
+                        <dd th:text="${item.recommendedPurchaseQuantity}">0</dd>
+                    </div>
+                </dl>
+                <form method="post" th:action="@{/items/{itemId}/stock/fill-to-target(itemId=${item.itemId})}">
+                    <button type="submit">Auf Sollbestand</button>
+                </form>
+            </article>
+        </section>
+    </section>
+</main>
+</body>
+</html>

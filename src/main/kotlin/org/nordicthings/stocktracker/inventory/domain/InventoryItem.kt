@@ -26,6 +26,7 @@ class InventoryItem private constructor(
 
     fun edit(
         name: ItemName,
+        currentStock: CurrentStock,
         minimumStock: MinimumStock,
         targetStock: TargetStock,
         note: ItemNote?,

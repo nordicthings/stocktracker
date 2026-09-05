@@ -11,6 +11,7 @@ data class CreateInventoryItemCommand(
 data class EditInventoryItemCommand(
     val itemId: String,
     val name: String,
+    val currentStock: Int,
     val minimumStock: Int,
     val targetStock: Int,
     val note: String?,

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${item.name} + ' bearbeiten'">Artikel bearbeiten</title>
+    <link rel="stylesheet" th:href="@{/css/inventory.css}">
+</head>
+<body>
+<main class="page-shell detail-shell">
+    <header class="page-header">
+        <div>
+            <p class="eyebrow">Nordic Things</p>
+            <h1 th:text="${item.name}">Artikel</h1>
+        </div>
+        <a class="secondary-action" th:href="@{/}">Zur Istbestandspflege</a>
+    </header>
+
+    <section class="message success" th:if="${successMessage}" th:text="${successMessage}"></section>
+    <section class="message error" th:if="${errorMessage}" th:text="${errorMessage}"></section>
+
+    <section class="detail-panel">
+        <form id="item-edit-form" class="item-form compact" method="post" th:action="@{/items/{itemId}/edit(itemId=${item.id})}">
+            <label>
+                <span>Artikel</span>
+                <input name="name" required maxlength="200" th:value="${item.name}">
+            </label>
+            <label>
+                <span>Istbestand</span>
+                <input name="currentStock" required inputmode="numeric" min="0" type="number" th:value="${item.currentStock}">
+            </label>
+            <label>
+                <span>Mindestbestand</span>
+                <input name="minimumStock" required inputmode="numeric" min="1" type="number" th:value="${item.minimumStock}">
+            </label>
+            <label>
+                <span>Sollbestand</span>
+                <input name="targetStock" required inputmode="numeric" min="1" type="number" th:value="${item.targetStock}">
+            </label>
+            <label class="wide">
+                <span>Notiz</span>
+                <textarea name="note" maxlength="500" rows="4" th:text="${item.note}"></textarea>
+            </label>
+        </form>
+        <div class="detail-actions">
+            <button type="submit" form="item-edit-form">Änderungen speichern</button>
+            <form method="post" th:action="@{/items/{itemId}/delete(itemId=${item.id})}">
+                <button class="danger" type="submit" onclick="return confirm('Artikel wirklich löschen?')">Löschen</button>
+            </form>
+        </div>
+    </section>
+</main>
+</body>
+</html>
