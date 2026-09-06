@@ -1,0 +1,25 @@
+services:
+  stocktracker:
+    image: ${APP_IMAGE:-stocktracker:0.1.0}
+    container_name: stocktracker
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: mariadb
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    networks:
+      stocktracker-app:
+        ipv4_address: ${APP_IPV4:-172.31.10.10}
+
+networks:
+  stocktracker-app:
+    name: stocktracker-app
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${APP_SUBNET:-172.31.10.0/24}

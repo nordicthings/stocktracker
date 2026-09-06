@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: ${STOCKTRACKER_DB_URL:jdbc:mariadb://localhost:3306/stocktracker}
-    username: ${STOCKTRACKER_DB_USERNAME:stocktracker}
-    password: ${STOCKTRACKER_DB_PASSWORD:stocktracker}
+    url: jdbc:mariadb://${DB_HOST}:${DB_PORT:3306}/${DB_NAME:stocktracker}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.mariadb.jdbc.Driver
