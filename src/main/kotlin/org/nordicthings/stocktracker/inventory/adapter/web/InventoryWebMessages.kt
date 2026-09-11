@@ -9,6 +9,10 @@ import org.nordicthings.stocktracker.inventory.domain.InvalidInventoryItemIdExce
 import org.nordicthings.stocktracker.inventory.domain.InvalidItemNameException
 import org.nordicthings.stocktracker.inventory.domain.InvalidMinimumStockException
 import org.nordicthings.stocktracker.inventory.domain.InvalidStockConfigurationException
+import org.nordicthings.stocktracker.inventory.application.EmptyShoppingListException
+import org.nordicthings.stocktracker.inventory.application.SetShoppingListToTargetNotConfirmedException
+import org.nordicthings.stocktracker.inventory.application.ShoppingListEmailConfigurationException
+import org.nordicthings.stocktracker.inventory.application.ShoppingListEmailDeliveryException
 import org.nordicthings.stocktracker.inventory.domain.InvalidStockOperationException
 import org.nordicthings.stocktracker.inventory.domain.InvalidTargetStockException
 import org.nordicthings.stocktracker.inventory.domain.InventoryException
@@ -17,6 +21,10 @@ fun InventoryApplicationException.toUserMessage(): String = when (this) {
     is DuplicateItemNameException -> "Ein Artikel mit diesem Namen existiert bereits."
     is DeleteInventoryItemNotConfirmedException -> "Der Artikel wurde nicht gelöscht, weil die Bestätigung fehlt."
     is InventoryItemNotFoundException -> "Der Artikel wurde nicht gefunden."
+    is SetShoppingListToTargetNotConfirmedException -> "Bitte bestätige das Setzen aller Positionen auf Sollbestand."
+    is EmptyShoppingListException -> "Die Einkaufsliste ist leer."
+    is ShoppingListEmailConfigurationException -> "Der E-Mail-Versand ist nicht vollständig konfiguriert."
+    is ShoppingListEmailDeliveryException -> "Die Einkaufsliste konnte nicht per E-Mail versendet werden."
     else -> "Die Aktion konnte nicht ausgeführt werden."
 }
 

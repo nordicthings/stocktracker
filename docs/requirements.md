@@ -24,6 +24,34 @@ Zum Umfang gehören:
 
 Nicht zum Umfang von Version 1 gehören vorbereitende Fachfunktionen für asynchrone Benachrichtigungen, Verbrauchstracking, Haltbarkeitsverwaltung, Import/Export oder Benutzerverwaltung.
 
+## Umfang Version 1.1
+
+Version 1.1 legt den fachlichen Fokus auf die Einkaufsliste.
+
+Zum Umfang gehören:
+
+- tabellarisches Layout der Einkaufsliste statt Card-Layout
+- reduzierte Anzeige der Einkaufsliste mit Artikel und Einkaufsmenge
+- Istbestand einzelner Einkaufslistenpositionen direkt aus der Einkaufsliste auf Sollbestand setzen
+- Istbestand aller aktuellen Einkaufslistenpositionen über die Einkaufsliste auf Sollbestand setzen
+- Sicherheitsabfrage vor dem Setzen aller Einkaufslistenpositionen auf Sollbestand
+- manueller Versand der aktuellen Einkaufsliste per E-Mail aus der Einkaufsliste heraus
+- automatischer Versand der aktuellen Einkaufsliste per E-Mail in einem konfigurierbaren Rhythmus
+- konfigurierbare Empfängerliste für den E-Mail-Versand
+- konfigurierbare Versandbedingung für den automatischen Versand
+- HTML-E-Mail mit einfachem tabellarischem Abbild der Einkaufsliste
+- durchnummerierte Versandvorgänge mit Anzeige der Versandnummer in der E-Mail
+- Protokollierung der Versandprüfung und des Mailversands im Anwendungslog
+
+Nicht zum Umfang von Version 1.1 gehören:
+
+- Kategorien
+- manuelles Ergänzen von Einkaufslistenpositionen
+- Abhaken von Einkaufslistenpositionen
+- automatische Produkterkennung oder externe Einkaufsdienste
+
+Kategorien werden für Version 1.2 vorgesehen.
+
 ## Grobe Funktionalität
 
 ### Artikel verwalten
@@ -129,8 +157,6 @@ Bei bestehendem Nachkaufbedarf weist die Bestandsliste deutlich darauf hin und v
 
 Wenn noch keine Artikel vorhanden sind, zeigt die Anwendung einen einfachen Hinweis.
 
-Wenn keine Artikel aufgefüllt werden müssen, zeigt die Einkaufsliste einen einfachen Hinweis.
-
 ### Begrifflichkeit
 
 In Version 1 werden in der Oberfläche die folgenden Begriffe verwendet:
@@ -151,6 +177,51 @@ Die Oberfläche soll eine Liste aller aufzufüllenden Artikel anzeigen und kriti
 Eine aktive asynchrone Benachrichtigung wird in Version 1 noch nicht umgesetzt.
 
 In einer späteren Version soll es definitiv eine aktive Benachrichtigungsfunktion geben. Voraussichtlich soll diese asynchron in einem festen, konfigurierbaren Rhythmus ausgeführt werden und eine Liste aller nachzukaufenden Artikel enthalten.
+
+### Einkaufsliste anzeigen ab Version 1.1
+
+Die Einkaufsliste wird ab Version 1.1 tabellarisch angezeigt.
+
+Je Einkaufslistenposition werden in der Tabelle nur folgende Informationen angezeigt:
+
+- Artikel
+- Einkaufsmenge
+
+Zusätzlich enthält jede Zeile eine Aktion `Auf Sollbestand`. Diese Aktion setzt den Istbestand des jeweiligen Artikels auf seinen Sollbestand.
+
+Im Seitenkopf der Einkaufsliste gibt es die Aktion `Alles auf Sollbestand`. Diese Aktion setzt den Istbestand aller aktuell angezeigten Einkaufslistenpositionen auf den jeweiligen Sollbestand. Vor der Ausführung muss die Aktion durch eine Sicherheitsabfrage bestätigt werden.
+
+### Einkaufsliste per E-Mail versenden ab Version 1.1
+
+Die aktuelle Einkaufsliste kann ab Version 1.1 per E-Mail an eine konfigurierte Empfängerliste versendet werden.
+
+Der E-Mail-Inhalt enthält ein einfaches HTML-Abbild der Einkaufsliste. Das HTML-Abbild zeigt mindestens:
+
+- Versandnummer
+- Artikel
+- Einkaufsmenge
+
+Jeder Versandvorgang erhält eine fortlaufende Versandnummer. Die Versandnummer wird in der E-Mail angegeben, damit Nutzer erkennen können, welche E-Mail den aktuellen Einkaufsbedarf enthält.
+
+Der Versand kann manuell durch den Nutzer aus der Einkaufsliste heraus ausgelöst werden.
+
+Zusätzlich wird der Versand in einem konfigurierbaren Rhythmus automatisch getriggert. Konfigurierbar sind:
+
+- Wochentage
+- Uhrzeit
+
+Für den automatischen Versand ist die Versandbedingung konfigurierbar.
+
+Unterstützte Versandbedingungen:
+
+- Versand, wenn sich der Bestand von Artikeln seit dem letzten Versand geändert hat und für mindestens einen dieser geänderten Artikel gilt: `Istbestand < Mindestbestand`.
+- Versand, wenn sich der Bestand von Artikeln seit dem letzten Versand geändert hat und für mindestens einen dieser geänderten Artikel gilt: `Istbestand < Sollbestand`.
+
+Wenn die konfigurierte Versandbedingung nicht erfüllt ist, wird kein automatischer E-Mail-Versand ausgelöst.
+
+Das Ergebnis jeder automatischen Versandprüfung wird im Anwendungslog festgehalten. Das Log soll erkennen lassen, ob ein Versand ausgelöst wurde oder warum kein Versand ausgelöst wurde.
+
+Das Ergebnis jedes Mailversands wird ebenfalls im Anwendungslog festgehalten. Das gilt für erfolgreichen und fehlgeschlagenen Versand.
 
 ## Erste fachliche Regeln
 
@@ -179,12 +250,18 @@ In einer späteren Version soll es definitiv eine aktive Benachrichtigungsfunkti
 - Die Sortierung der Listen kann in Version 1 in der Oberfläche geändert werden.
 - In Version 1 wird eine einfache Textsuche nach Artikelname unterstützt.
 - Bestandsliste und Einkaufsliste sind getrennte Seiten unter `/items` und `/shopping-list`.
+- Ab Version 1.1 kann der Istbestand eines Artikels aus der Einkaufsliste auf den Sollbestand gesetzt werden.
+- Ab Version 1.1 kann der Istbestand aller aktuellen Einkaufslistenpositionen gesammelt auf den jeweiligen Sollbestand gesetzt werden.
+- Ab Version 1.1 muss das gesammelte Setzen aller Einkaufslistenpositionen auf Sollbestand bestätigt werden.
+- Ab Version 1.1 wird jeder E-Mail-Versand der Einkaufsliste fortlaufend nummeriert.
+- Ab Version 1.1 löst der automatische Versand nur dann eine E-Mail aus, wenn sich seit dem letzten Versand relevante Artikelbestände geändert haben und die konfigurierte Versandbedingung erfüllt ist.
+- Ab Version 1.1 wird das Ergebnis jeder automatischen Versandprüfung im Anwendungslog protokolliert.
+- Ab Version 1.1 wird das Ergebnis jedes Mailversands im Anwendungslog protokolliert.
 
 ## Offene Fragen
 
-- Sollen Kategorien in einer späteren Version ergänzt werden?
+- Welche Kategorien sollen in Version 1.2 ergänzt werden?
 - Sollen spätere Versionen manuelle Interaktionen mit der Einkaufsliste unterstützen, z. B. Ergänzen, Abhaken oder automatische Istbestandsaktualisierung?
-- Wie soll die spätere asynchrone Benachrichtigung technisch und fachlich ausgestaltet werden?
 - Wie soll in einer späteren Version der Verbrauch getrackt werden, um Altbestände ohne Verbrauch zu erkennen?
 
 ## Nicht-Ziele für die erste Ausbaustufe

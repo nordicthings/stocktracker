@@ -41,6 +41,10 @@ data class ShoppingListQuery(
     val sort: ShoppingListSort = ShoppingListSort.NAME,
 )
 
+data class SetShoppingListToTargetCommand(
+    val confirmed: Boolean,
+)
+
 enum class InventoryItemSort {
     NAME,
     CRITICAL_FIRST,

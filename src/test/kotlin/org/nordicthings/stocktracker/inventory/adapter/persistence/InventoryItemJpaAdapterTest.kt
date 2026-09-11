@@ -1,5 +1,6 @@
 package org.nordicthings.stocktracker.inventory.adapter.persistence
 
+import java.time.Instant
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -25,11 +26,14 @@ import org.springframework.test.context.TestPropertySource
 class InventoryItemJpaAdapterTest @Autowired constructor(
     private val repository: InventoryItemJpaAdapter,
     private val jpaRepository: InventoryItemJpaRepository,
+    private val dispatchRepository: ShoppingListEmailDispatchJpaAdapter,
+    private val dispatchJpaRepository: ShoppingListEmailDispatchJpaRepository,
 ) {
 
     @BeforeTest
     fun clearRepository() {
         jpaRepository.deleteAll()
+        dispatchJpaRepository.deleteAll()
     }
 
     @Test
@@ -78,6 +82,17 @@ class InventoryItemJpaAdapterTest @Autowired constructor(
 
         assertFalse(repository.findById(item.id) != null)
         assertTrue(repository.findAll().isEmpty())
+    }
+
+    @Test
+    fun `stores successful email dispatches and exposes their sequence`() {
+        val sentAt = Instant.parse("2026-09-06T10:15:30Z")
+
+        assertEquals(1, dispatchRepository.nextDispatchNumber())
+        dispatchRepository.saveSuccessfulDispatch(1, sentAt)
+
+        assertEquals(sentAt, dispatchRepository.findLastSuccessfulDispatchAt())
+        assertEquals(2, dispatchRepository.nextDispatchNumber())
     }
 
     private fun createItem(

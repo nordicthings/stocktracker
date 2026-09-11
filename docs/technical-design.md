@@ -322,3 +322,147 @@ Vorgesehene Verantwortlichkeiten:
 - `TargetStock` stellt sicher, dass der Sollbestand mindestens 1 ist.
 - `InventoryItem` stellt sicher, dass der Sollbestand größer oder gleich dem Mindestbestand ist.
 - `InventoryItem` stellt sicher, dass Istbestandsverringerungen nicht zu einem negativen Istbestand führen.
+
+## Technischer Zielentwurf Version 1.1
+
+Version 1.1 erweitert den bestehenden modularen Monolithen mit Fokus auf die Einkaufsliste.
+
+Kategorien werden in Version 1.1 nicht umgesetzt. Sie sind für Version 1.2 vorgesehen.
+
+### UI Einkaufsliste
+
+Die bestehende Route `/shopping-list` bleibt bestehen.
+
+Das Template der Einkaufsliste wird von einem Card-Layout auf ein tabellarisches Layout umgestellt.
+
+Die Tabelle zeigt nur:
+
+- Artikel
+- Einkaufsmenge
+
+Zusätzlich enthält jede Tabellenzeile eine Aktion `Auf Sollbestand`. Diese Aktion nutzt den bestehenden Use Case `SetStockToTargetUseCase`.
+
+Im Seitenkopf wird eine Aktion `Alles auf Sollbestand` ergänzt. Diese Aktion benötigt einen neuen Application-Use-Case, weil mehrere Einkaufslistenpositionen auf Basis der aktuellen Einkaufsliste gesammelt aktualisiert werden.
+
+Vorgesehener neuer Use Case:
+
+- `SetShoppingListToTargetUseCase`
+
+Der Use Case erhält ein Command mit Bestätigung, zum Beispiel:
+
+- `SetShoppingListToTargetCommand(confirmed: Boolean)`
+
+Der Web-Adapter schützt die Aktion zusätzlich durch eine Sicherheitsabfrage in der Oberfläche.
+
+### E-Mail-Versand der Einkaufsliste
+
+Der E-Mail-Versand wird als eigener Application-Use-Case innerhalb des Fachmoduls `inventory` eingeführt, solange die Einkaufsliste weiterhin ausschließlich aus `InventoryItem`-Aggregaten abgeleitet wird.
+
+Vorgesehene neue Use Cases:
+
+- `SendShoppingListEmailUseCase`
+- `CheckScheduledShoppingListEmailUseCase`
+
+Der manuelle Versand wird aus dem `ShoppingListController` ausgelöst.
+
+Der automatische Versand wird durch einen technischen Scheduler getriggert, ruft aber nur Application-Use-Cases auf. Scheduling- und Mail-Infrastruktur bleiben Adapter.
+
+Das Ergebnis jeder automatischen Versandprüfung wird über das Anwendungslogging protokolliert.
+
+Zu protokollieren sind mindestens:
+
+- Zeitpunkt der Prüfung
+- konfigurierte Versandbedingung
+- Anzahl der seit dem letzten Versand geänderten Artikelbestände
+- Ergebnis der Prüfung
+- bei nicht ausgelöstem Versand der Grund, zum Beispiel keine relevanten Bestandsänderungen oder Versandbedingung nicht erfüllt
+- bei ausgelöstem Versand die erzeugte Versandnummer
+
+### Ports
+
+Für Version 1.1 werden neue Ports in der Application-Schicht erwartet.
+
+Vorgesehene Ports:
+
+- `ShoppingListEmailSender`
+- `ShoppingListEmailDispatchRepository`
+- `InventoryStockChangeRepository` oder Erweiterung des bestehenden `InventoryItemRepository`
+
+`ShoppingListEmailSender` versendet die vorbereitete E-Mail über einen technischen Mail-Adapter.
+
+`ShoppingListEmailDispatchRepository` speichert für erfolgreiche Versandvorgänge die fortlaufende Versandnummer und den Versandzeitpunkt. Fehlgeschlagene Versandversuche werden nicht persistiert und erhalten keine Versandnummer.
+
+Für die Prüfung, welche Artikelbestände sich seit dem letzten Versand geändert haben, muss die Application-Schicht auf geeignete Änderungsinformationen zugreifen können.
+
+Der Mail-Adapter protokolliert das Ergebnis jedes Versandversuchs im Anwendungslog. Bei erfolgreichem Versand werden mindestens Versandnummer und Empfängeranzahl geloggt. Bei fehlgeschlagenem Versand werden mindestens Versandnummer, Empfängeranzahl und Fehlerursache geloggt.
+
+### Persistenzbedarf
+
+Version 1.1 benötigt zusätzliche persistierte Informationen.
+
+Benötigt werden mindestens:
+
+- Versandnummer
+- Versandzeitpunkt
+- Der Versandzeitpunkt dient als Referenz für den Vergleich mit `inventory_items.updated_at`.
+
+Die Umsetzung nutzt die neue Tabelle `shopping_list_email_dispatches` für erfolgreiche Versandvorgänge. Die vorhandene Spalte `inventory_items.updated_at` wird gegen den Zeitpunkt des letzten erfolgreichen Versands verglichen.
+
+Neue Datenbankänderungen werden über neue Liquibase-Changelog-Dateien eingeführt und im Master-Changelog eingebunden. Bestehende Changesets werden nicht verändert.
+
+### HTML-Mail
+
+Der Mail-Content enthält ein einfaches HTML-Abbild der Einkaufsliste.
+
+Das HTML muss unabhängig vom Web-Template erzeugbar sein, damit manueller und automatischer Versand denselben Inhalt verwenden können.
+
+Die Mail zeigt mindestens:
+
+- Versandnummer
+- Artikel
+- Einkaufsmenge
+
+### Logging
+
+Version 1.1 nutzt das bestehende Anwendungslogging für Versandprüfung und Mailversand.
+
+Die automatische Versandprüfung loggt auch dann ein Ergebnis, wenn keine E-Mail versendet wird.
+
+Der Mailversand loggt erfolgreiche und fehlgeschlagene Versandversuche.
+
+Die Logs dürfen keine vertraulichen SMTP-Zugangsdaten enthalten.
+
+Bei Empfängeradressen ist vor der Umsetzung zu entscheiden, ob vollständige Adressen oder nur die Empfängeranzahl geloggt werden. Standardannahme für den technischen Entwurf ist, nur die Empfängeranzahl zu loggen.
+
+### Konfiguration
+
+Version 1.1 benötigt Konfiguration für:
+
+- Empfängerliste
+- Versandbedingung
+- Wochentage
+- Uhrzeit
+- technische Mail-Anbindung
+- Absenderadresse
+
+Die Konfiguration erfolgt ausschließlich über `application.yml` und Umgebungsvariablen. Für Docker werden die SMTP-Werte, Absender, Empfänger, Versandbedingung und der Spring-Cron-Ausdruck durch Umgebungsvariablen übergeben. Zugangsdaten werden nicht im Repository gespeichert.
+
+### Versandbedingungen
+
+Die Application-Schicht bildet die konfigurierbaren Versandbedingungen als fachlichen Wert ab.
+
+Vorgesehene Werte:
+
+- `CHANGED_ITEMS_BELOW_MINIMUM_STOCK`
+- `CHANGED_ITEMS_BELOW_TARGET_STOCK`
+
+Die Prüfung erfolgt gegen Artikel, deren Bestand sich seit dem letzten erfolgreichen Versand geändert hat.
+
+### Entscheidungen für Version 1.1
+
+- Der Versand erfolgt über einen externen SMTP-Server und einen dedizierten Mailaccount.
+- Empfänger, Versandbedingung, Versandrhythmus und SMTP-Verbindung werden über Anwendungskonfiguration und Umgebungsvariablen gesetzt.
+- Die Versandprüfung vergleicht `inventory_items.updated_at` mit dem Zeitpunkt des letzten erfolgreichen Versands.
+- Nur erfolgreiche Sendungen werden persistiert und erhalten eine Versandnummer.
+- Das Logging enthält nur die Empfängeranzahl, keine Empfängeradressen.
+- Manueller Versand ist nur bei einer nichtleeren Einkaufsliste möglich und ignoriert die automatische Versandbedingung.

@@ -32,6 +32,10 @@ interface SetStockToTargetUseCase {
     fun setStockToTarget(itemId: String): InventoryItemView
 }
 
+interface SetShoppingListToTargetUseCase {
+    fun setShoppingListToTarget(command: SetShoppingListToTargetCommand)
+}
+
 interface ViewInventoryItemUseCase {
     fun viewInventoryItem(itemId: String): InventoryItemView
 }

@@ -98,9 +98,13 @@ class InventoryItemControllerTest @Autowired constructor(
         assertEquals(200, shoppingResponse.statusCode())
         assertContains(shoppingResponse.body(), "Einkaufsliste")
         assertContains(shoppingResponse.body(), "Zurück zur Bestandsliste")
-        assertContains(shoppingResponse.body(), "Unter Mindestbestand")
         assertContains(shoppingResponse.body(), "Einkaufsmenge")
         assertContains(shoppingResponse.body(), "Auf Sollbestand")
+        assertContains(shoppingResponse.body(), "Alles auf Sollbestand")
+        assertContains(shoppingResponse.body(), "Per E-Mail versenden")
+        assertContains(shoppingResponse.body(), "Alle Einkaufslistenpositionen auf Sollbestand setzen?")
+        assertFalse(shoppingResponse.body().contains("Istbestand"))
+        assertFalse(shoppingResponse.body().contains("Mindestbestand"))
         assertContains(shoppingResponse.body(), ">4<")
     }
 
@@ -237,7 +241,7 @@ class InventoryItemControllerTest @Autowired constructor(
     }
 
     @Test
-    fun `fills current stock to target and returns to shopping list when requested there`() {
+    fun `returns to inventory when filling the final shopping list item`() {
         post(
             "/items",
             form(
@@ -255,8 +259,8 @@ class InventoryItemControllerTest @Autowired constructor(
         )
 
         assertEquals(200, response.statusCode())
-        assertContains(response.body(), "Einkaufsliste")
-        assertContains(response.body(), "Aktuell muss nichts aufgefüllt werden.")
+        assertContains(response.body(), "Vorratsverwaltung")
+        assertFalse(response.body().contains("Einkaufsliste"))
     }
 
     @Test

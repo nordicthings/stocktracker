@@ -303,6 +303,25 @@ textarea {
     gap: 1rem;
 }
 
+.shopping-list-actions {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.shopping-list-actions form {
+    margin: 0;
+}
+
+.shopping-list-table {
+    min-width: 560px;
+}
+
+.shopping-list-table th:nth-child(2),
+.shopping-list-table td:nth-child(2) {
+    text-align: center;
+}
+
 .inventory-page .shopping-list {
     min-height: 0;
     overflow: auto;

@@ -1,0 +1,30 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-create-shopping-list-email-dispatches
+      author: jens
+      changes:
+        - createTable:
+            tableName: shopping_list_email_dispatches
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_shopping_list_email_dispatches
+              - column:
+                  name: dispatch_number
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: sent_at
+                  type: datetime
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: shopping_list_email_dispatches
+            columnNames: dispatch_number
+            constraintName: uk_shopping_list_email_dispatches_number

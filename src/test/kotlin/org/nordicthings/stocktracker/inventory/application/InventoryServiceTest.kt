@@ -1,5 +1,6 @@
 package org.nordicthings.stocktracker.inventory.application
 
+import java.time.Instant
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -216,6 +217,29 @@ class InventoryServiceTest {
         assertEquals("Bio", shoppingList[1].note)
     }
 
+    @Test
+    fun `sets every current shopping list item to target stock after confirmation`() {
+        val repository = FakeInventoryItemRepository()
+        val service = InventoryService(repository)
+        service.create(createCommand(name = "Nudeln", currentStock = 1, targetStock = 5))
+        service.create(createCommand(name = "Reis", currentStock = 2, targetStock = 6))
+        val fullItem = service.create(createCommand(name = "Salz", currentStock = 5, targetStock = 5))
+
+        service.setShoppingListToTarget(SetShoppingListToTargetCommand(confirmed = true))
+
+        assertTrue(service.viewShoppingList().isEmpty())
+        assertEquals(5, service.viewInventoryItem(fullItem.id).currentStock)
+    }
+
+    @Test
+    fun `requires confirmation before setting all shopping list items to target stock`() {
+        val service = InventoryService(FakeInventoryItemRepository())
+
+        assertFailsWith<SetShoppingListToTargetNotConfirmedException> {
+            service.setShoppingListToTarget(SetShoppingListToTargetCommand(confirmed = false))
+        }
+    }
+
     private fun createCommand(
         name: String = "Nudeln (500g)",
         currentStock: Int = 2,
@@ -235,6 +259,8 @@ class InventoryServiceTest {
         override fun findById(id: InventoryItemId): InventoryItem? = items[id]
 
         override fun findAll(): List<InventoryItem> = items.values.toList()
+
+        override fun findAllUpdatedAfter(instant: Instant): List<InventoryItem> = items.values.toList()
 
         override fun deleteById(id: InventoryItemId) {
             items.remove(id)

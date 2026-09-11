@@ -37,6 +37,10 @@ class InventoryItemJpaAdapter(
     override fun findAll(): List<InventoryItem> =
         jpaRepository.findAll().map(mapper::toDomain)
 
+    @Transactional(readOnly = true)
+    override fun findAllUpdatedAfter(instant: java.time.Instant): List<InventoryItem> =
+        jpaRepository.findAllByUpdatedAtAfter(instant).map(mapper::toDomain)
+
     @Transactional
     override fun deleteById(id: InventoryItemId) {
         jpaRepository.deleteById(id.value)

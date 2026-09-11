@@ -12,3 +12,18 @@ class DuplicateItemNameException(name: String) :
 
 class DeleteInventoryItemNotConfirmedException :
     InventoryApplicationException("Deleting an inventory item requires confirmation.")
+
+class SetShoppingListToTargetNotConfirmedException :
+    InventoryApplicationException("Setting all shopping list items to target stock requires confirmation.")
+
+class EmptyShoppingListException :
+    InventoryApplicationException("The shopping list is empty.")
+
+class ShoppingListEmailConfigurationException(message: String) : InventoryApplicationException(message)
+
+class ShoppingListEmailDeliveryException(cause: Throwable) :
+    InventoryApplicationException("The shopping list email could not be sent.") {
+    init {
+        initCause(cause)
+    }
+}

@@ -17,6 +17,10 @@ The project includes a Gradle Wrapper using Gradle 9.7.1.
 
 The default Spring profile is `h2`.
 
+## Shopping-list Emails
+
+SMTP and shopping-list email settings are supplied through environment variables. Copy `.env.example` to `.env` and fill in the SMTP account values. `SHOPPING_LIST_EMAIL_SCHEDULE` uses a six-part Spring cron expression (`second minute hour day-of-month month day-of-week`); use `-` to disable automatic checks. The available conditions are `CHANGED_ITEMS_BELOW_MINIMUM_STOCK` and `CHANGED_ITEMS_BELOW_TARGET_STOCK`.
+
 ## Tests
 
 ```bash

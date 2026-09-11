@@ -1,5 +1,6 @@
 package org.nordicthings.stocktracker.inventory.application
 
+import java.time.Instant
 import org.nordicthings.stocktracker.inventory.domain.InventoryItem
 import org.nordicthings.stocktracker.inventory.domain.InventoryItemId
 
@@ -9,6 +10,8 @@ interface InventoryItemRepository {
     fun findById(id: InventoryItemId): InventoryItem?
 
     fun findAll(): List<InventoryItem>
+
+    fun findAllUpdatedAfter(instant: Instant): List<InventoryItem>
 
     fun deleteById(id: InventoryItemId)
 

@@ -62,7 +62,7 @@ Der Istbestand darf über dem Sollbestand liegen.
 
 Die Notiz ist ein optionaler Hinweistext zu einem Artikel.
 
-Sie hat in Version 1 keine eigene steuernde Fachlogik. Bei nachkaufpflichtigen Artikeln wird sie in der Einkaufsliste als Einkaufshinweis angezeigt.
+Sie hat in Version 1 keine eigene steuernde Fachlogik. Bei Artikeln in der Einkaufsliste wird sie als Einkaufshinweis angezeigt.
 
 Die Notiz darf maximal 500 Zeichen lang sein.
 
@@ -70,13 +70,13 @@ Die Notiz darf maximal 500 Zeichen lang sein.
 
 Die Einkaufsliste ist eine aus den Artikel-Istbeständen abgeleitete Sicht.
 
-Sie enthält alle Artikel, deren Istbestand unter dem Mindestbestand liegt.
+Sie enthält alle Artikel, deren Istbestand unter dem Sollbestand liegt.
 
 Die Einkaufsliste wird in Version 1 nicht manuell gepflegt. Einträge können nicht ergänzt oder abgehakt werden.
 
 ### Einkaufsposition
 
-Eine Einkaufsposition beschreibt einen nachkaufpflichtigen Artikel in der Einkaufsliste.
+Eine Einkaufsposition beschreibt einen aufzufüllenden Artikel in der Einkaufsliste.
 
 Sie enthält:
 
@@ -93,7 +93,7 @@ Die empfohlene Einkaufsmenge berechnet sich aus:
 Sollbestand - Istbestand
 ```
 
-Da Einkaufspositionen nur für Artikel unter Mindestbestand entstehen und der Sollbestand mindestens so groß wie der Mindestbestand sein muss, ist die empfohlene Einkaufsmenge im Normalfall mindestens 1.
+Da Einkaufspositionen nur für Artikel unter Sollbestand entstehen, ist die empfohlene Einkaufsmenge mindestens 1.
 
 ## Use Cases Version 1
 
@@ -112,7 +112,7 @@ Vorbedingungen:
 Ergebnis:
 
 - Der Artikel ist angelegt.
-- Falls der aktuelle Istbestand unter dem Mindestbestand liegt, erscheint der Artikel auf der Einkaufsliste.
+- Falls der aktuelle Istbestand unter dem Sollbestand liegt, erscheint der Artikel auf der Einkaufsliste.
 
 ### Artikel bearbeiten
 
@@ -213,7 +213,7 @@ Vorbedingungen:
 Ergebnis:
 
 - Der aktuelle Istbestand entspricht dem Sollbestand.
-- Der Artikel ist anschließend nicht nachkaufpflichtig.
+- Der Artikel erscheint anschließend nicht mehr auf der Einkaufsliste.
 
 ### Vorratsliste anzeigen
 
@@ -229,7 +229,7 @@ Sie unterstützt:
 
 ### Einkaufsliste anzeigen
 
-Die Einkaufsliste zeigt alle aktuell nachkaufpflichtigen Artikel.
+Die Einkaufsliste zeigt alle aktuell aufzufüllenden Artikel, deren Istbestand unter dem Sollbestand liegt.
 
 Sie unterstützt:
 
@@ -241,6 +241,8 @@ Sie unterstützt:
 
 - Ein Artikel ist nachkaufpflichtig, wenn sein Istbestand kleiner als sein Mindestbestand ist.
 - Ein Artikel ist nicht nachkaufpflichtig, wenn sein Istbestand größer oder gleich seinem Mindestbestand ist.
+- Ein Artikel erscheint auf der Einkaufsliste, wenn sein Istbestand kleiner als sein Sollbestand ist.
+- Ein Artikel erscheint nicht auf der Einkaufsliste, wenn sein Istbestand größer oder gleich seinem Sollbestand ist.
 - Die empfohlene Einkaufsmenge ist die Differenz zwischen Sollbestand und Istbestand.
 - Istbestand, Mindestbestand und Sollbestand sind Stückzahlen.
 - Istbestand, Mindestbestand und Sollbestand sind ganze Zahlen.
@@ -263,3 +265,132 @@ Für Version 1 ist mindestens erforderlich:
 - führende und nachfolgende Leerzeichen entfernen
 - Groß- und Kleinschreibung ignorieren
 - mehrfach vorkommende Leerzeichen innerhalb des Namens zu einem Leerzeichen zusammenfassen
+
+## Erweiterungen Version 1.1
+
+Version 1.1 erweitert das Domänenmodell rund um die Einkaufsliste und deren E-Mail-Versand.
+
+Kategorien gehören nicht zu Version 1.1. Sie sind für Version 1.2 vorgesehen.
+
+### Einkaufslistenversand
+
+Ein Einkaufslistenversand beschreibt den Versand der aktuellen Einkaufsliste per E-Mail.
+
+Jeder Versand erhält eine fortlaufende Versandnummer. Die Versandnummer wird in der E-Mail angezeigt, damit Nutzer erkennen können, welche E-Mail den aktuellen Einkaufsbedarf enthält.
+
+Ein Versand enthält fachlich:
+
+- Versandnummer
+- Versandzeitpunkt
+- Empfänger
+- versendete Einkaufspositionen
+
+Die versendeten Einkaufspositionen bilden die Einkaufsliste zum Zeitpunkt des Versands ab. Sie enthalten mindestens:
+
+- Artikelname
+- Einkaufsmenge
+
+### Versandbedingung
+
+Die Versandbedingung steuert, wann der automatische Einkaufslistenversand eine E-Mail auslöst.
+
+Unterstützte Bedingungen:
+
+- Bestandsänderung seit dem letzten Versand und mindestens ein geänderter Artikel ist unter Mindestbestand.
+- Bestandsänderung seit dem letzten Versand und mindestens ein geänderter Artikel ist unter Sollbestand.
+
+Die Bedingung bezieht sich auf Artikel, deren Bestand sich seit dem letzten Versand geändert hat.
+
+### Versandrhythmus
+
+Der automatische Versand wird in einem konfigurierbaren Rhythmus geprüft.
+
+Der Rhythmus besteht fachlich aus:
+
+- Wochentagen
+- Uhrzeit
+
+Der Rhythmus beschreibt, wann geprüft wird, ob die konfigurierte Versandbedingung erfüllt ist.
+
+### Use Cases Version 1.1
+
+#### Einkaufsliste kompakt anzeigen
+
+Die Einkaufsliste wird tabellarisch angezeigt.
+
+Je Position werden in der Tabelle nur Artikelname und Einkaufsmenge angezeigt.
+
+#### Einkaufslistenposition auf Sollbestand setzen
+
+Der Istbestand eines Artikels aus der Einkaufsliste wird auf seinen Sollbestand gesetzt.
+
+Vorbedingungen:
+
+- Der Artikel existiert.
+- Der Artikel steht aktuell auf der Einkaufsliste.
+- Der aktuelle Istbestand liegt unter dem Sollbestand.
+
+Ergebnis:
+
+- Der Istbestand des Artikels entspricht dem Sollbestand.
+- Der Artikel erscheint anschließend nicht mehr auf der Einkaufsliste.
+
+#### Alle Einkaufslistenpositionen auf Sollbestand setzen
+
+Der Istbestand aller aktuellen Einkaufslistenpositionen wird auf den jeweiligen Sollbestand gesetzt.
+
+Vorbedingungen:
+
+- Die Aktion wurde bestätigt.
+- Es gibt mindestens eine Einkaufslistenposition.
+
+Ergebnis:
+
+- Für jeden Artikel der aktuellen Einkaufsliste entspricht der Istbestand dem Sollbestand.
+- Die Einkaufsliste ist anschließend leer, solange keine zwischenzeitlichen Bestandsänderungen neue Einkaufspositionen erzeugt haben.
+
+#### Einkaufsliste manuell versenden
+
+Der Nutzer löst den Versand der aktuellen Einkaufsliste aus der Einkaufsliste heraus aus.
+
+Vorbedingungen:
+
+- Es ist mindestens ein Empfänger konfiguriert.
+- Der E-Mail-Versand ist technisch konfiguriert.
+
+Ergebnis:
+
+- Die aktuelle Einkaufsliste wird per E-Mail versendet.
+- Der Versand erhält eine neue fortlaufende Versandnummer.
+- Der Versand wird als letzter Versand berücksichtigt.
+
+#### Automatischen Einkaufslistenversand prüfen
+
+Die Anwendung prüft im konfigurierten Rhythmus, ob eine E-Mail versendet werden soll.
+
+Vorbedingungen:
+
+- Es ist mindestens ein Empfänger konfiguriert.
+- Der E-Mail-Versand ist technisch konfiguriert.
+- Der konfigurierte Prüfzeitpunkt ist erreicht.
+
+Ergebnis:
+
+- Wenn die konfigurierte Versandbedingung erfüllt ist, wird die aktuelle Einkaufsliste per E-Mail versendet.
+- Wenn die konfigurierte Versandbedingung nicht erfüllt ist, wird keine E-Mail versendet.
+- Bei Versand erhält der Vorgang eine neue fortlaufende Versandnummer und wird als letzter Versand berücksichtigt.
+- Das Ergebnis der Prüfung wird im Anwendungslog festgehalten.
+- Das Ergebnis eines ausgelösten Mailversands wird im Anwendungslog festgehalten.
+
+### Fachliche Regeln Version 1.1
+
+- Die kompakte Einkaufsliste zeigt Artikelname und Einkaufsmenge.
+- Eine Einkaufslistenposition kann aus der Einkaufsliste heraus auf Sollbestand gesetzt werden.
+- Alle aktuellen Einkaufslistenpositionen können gesammelt auf Sollbestand gesetzt werden.
+- Das gesammelte Setzen aller Einkaufslistenpositionen auf Sollbestand muss bestätigt werden.
+- Jeder erfolgreiche Einkaufslistenversand erhält genau eine neue fortlaufende Versandnummer.
+- Die Versandnummer wird in der E-Mail angezeigt.
+- Der automatische Versand prüft nur zum konfigurierten Rhythmus, ob ein Versand erforderlich ist.
+- Der automatische Versand sendet nur dann eine E-Mail, wenn die konfigurierte Versandbedingung erfüllt ist.
+- Das Ergebnis jeder automatischen Versandprüfung wird im Anwendungslog protokolliert.
+- Das Ergebnis jedes Mailversands wird im Anwendungslog protokolliert.

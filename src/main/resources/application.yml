@@ -11,6 +11,21 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+  mail:
+    host: ${SMTP_HOST:}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail.smtp.auth: ${SMTP_AUTH:true}
+      mail.smtp.starttls.enable: ${SMTP_STARTTLS_ENABLED:true}
+
+stocktracker:
+  shopping-list-email:
+    from: ${SHOPPING_LIST_EMAIL_FROM:}
+    recipients: ${SHOPPING_LIST_EMAIL_RECIPIENTS:}
+    condition: ${SHOPPING_LIST_EMAIL_CONDITION:CHANGED_ITEMS_BELOW_TARGET_STOCK}
+    schedule: ${SHOPPING_LIST_EMAIL_SCHEDULE:-}
 
 server:
   port: 8080

@@ -20,6 +20,7 @@ class InventoryService(
     DecreaseCurrentStockUseCase,
     RemoveOneItemUseCase,
     SetStockToTargetUseCase,
+    SetShoppingListToTargetUseCase,
     ViewInventoryItemUseCase,
     ViewInventoryItemsUseCase,
     ViewShoppingListUseCase {
@@ -82,6 +83,16 @@ class InventoryService(
 
     override fun setStockToTarget(itemId: String): InventoryItemView =
         saveUpdatedItem(itemId) { item -> item.setStockToTarget() }
+
+    override fun setShoppingListToTarget(command: SetShoppingListToTargetCommand) {
+        if (!command.confirmed) {
+            throw SetShoppingListToTargetNotConfirmedException()
+        }
+
+        repository.findAll()
+            .filter { it.isBelowTargetStock }
+            .forEach { item -> repository.save(item.setStockToTarget()) }
+    }
 
     override fun viewInventoryItem(itemId: String): InventoryItemView =
         getItem(itemId).toView()
