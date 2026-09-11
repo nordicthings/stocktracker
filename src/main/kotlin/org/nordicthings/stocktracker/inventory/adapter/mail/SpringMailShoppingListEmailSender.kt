@@ -32,15 +32,14 @@ class SpringMailShoppingListEmailSender(
     }
 
     private fun renderHtml(email: ShoppingListEmail): String = buildString {
-        append("<html><body><h1>Einkaufsliste</h1>")
-        append("<p>Versandnummer: <strong>")
-        append(email.dispatchNumber)
-        append("</strong></p><table border=\"1\" cellpadding=\"8\" cellspacing=\"0\">")
+        append("<html><body><h1>")
+        append(HtmlUtils.htmlEscape(email.subject))
+        append("</h1><table border=\"1\" cellpadding=\"8\" cellspacing=\"0\">")
         append("<thead><tr><th>Artikel</th><th>Einkaufsmenge</th></tr></thead><tbody>")
         email.items.forEach { item ->
             append("<tr><td>")
             append(HtmlUtils.htmlEscape(item.itemName))
-            append("</td><td>")
+            append("</td><td style=\"text-align: center;\">")
             append(item.purchaseQuantity)
             append("</td></tr>")
         }

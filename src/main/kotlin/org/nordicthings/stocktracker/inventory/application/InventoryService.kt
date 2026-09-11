@@ -8,7 +8,9 @@ import org.nordicthings.stocktracker.inventory.domain.ItemName
 import org.nordicthings.stocktracker.inventory.domain.ItemNote
 import org.nordicthings.stocktracker.inventory.domain.MinimumStock
 import org.nordicthings.stocktracker.inventory.domain.TargetStock
+import org.springframework.stereotype.Service
 
+@Service
 class InventoryService(
     private val repository: InventoryItemRepository,
 ) :

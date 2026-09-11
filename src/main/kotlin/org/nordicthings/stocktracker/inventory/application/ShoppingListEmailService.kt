@@ -4,7 +4,9 @@ import java.time.Clock
 import java.time.Instant
 import org.slf4j.LoggerFactory
 import org.nordicthings.stocktracker.inventory.domain.InventoryItem
+import org.springframework.stereotype.Service
 
+@Service
 class ShoppingListEmailService(
     private val inventoryItemRepository: InventoryItemRepository,
     private val dispatchRepository: ShoppingListEmailDispatchRepository,
