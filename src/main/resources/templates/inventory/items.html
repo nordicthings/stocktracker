@@ -57,7 +57,8 @@
                     </option>
                 </select>
             </label>
-            <button type="submit">Anzeigen</button>
+            <button class="filter-apply" type="submit">Anzeigen</button>
+            <button class="secondary-action reset-filter" type="submit" name="resetFilters" value="true">Zurücksetzen</button>
         </form>
 
         <p class="empty-state" th:if="${inventoryOverview.items.isEmpty()}">Noch keine Artikel vorhanden.</p>

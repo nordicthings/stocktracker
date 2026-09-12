@@ -19,14 +19,17 @@ import org.nordicthings.stocktracker.inventory.application.ViewInventoryItemUseC
 import org.nordicthings.stocktracker.inventory.application.ViewInventoryItemsUseCase
 import org.nordicthings.stocktracker.inventory.domain.InventoryException
 import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.mvc.support.RedirectAttributes
+import org.springframework.web.bind.annotation.SessionAttributes
 
 @Controller
+@SessionAttributes("inventoryFilter")
 class InventoryItemController(
     private val createInventoryItem: CreateInventoryItemUseCase,
     private val editInventoryItem: EditInventoryItemUseCase,
@@ -46,14 +49,28 @@ class InventoryItemController(
     fun items(
         @RequestParam(required = false) searchTerm: String?,
         @RequestParam(required = false) inventorySort: String?,
+        @RequestParam(defaultValue = "false") resetFilters: Boolean,
+        @ModelAttribute("inventoryFilter") inventoryFilter: InventoryFilter,
         model: Model,
     ): String {
-        val selectedInventorySort = inventorySort.toInventoryItemSort()
+        if (resetFilters) {
+            inventoryFilter.reset()
+        } else {
+            if (searchTerm != null) {
+                inventoryFilter.searchTerm = searchTerm
+            }
+            if (inventorySort != null) {
+                inventoryFilter.sort = inventorySort.toInventoryItemSort()
+            }
+        }
+
+        val selectedInventorySort = inventoryFilter.sort
+        val selectedSearchTerm = inventoryFilter.searchTerm
         val inventoryOverview = viewInventoryItems.viewInventoryItems(
-            InventoryItemsQuery(searchTerm = searchTerm, sort = selectedInventorySort),
+            InventoryItemsQuery(searchTerm = selectedSearchTerm, sort = selectedInventorySort),
         )
 
-        model.addAttribute("searchTerm", searchTerm.orEmpty())
+        model.addAttribute("searchTerm", selectedSearchTerm.orEmpty())
         model.addAttribute("inventorySort", selectedInventorySort)
         model.addAttribute("inventorySorts", InventoryItemSort.entries)
         model.addAttribute("inventoryOverview", inventoryOverview)
@@ -63,6 +80,9 @@ class InventoryItemController(
 
         return "inventory/items"
     }
+
+    @ModelAttribute("inventoryFilter")
+    fun inventoryFilter(): InventoryFilter = InventoryFilter()
 
     @GetMapping("/items/{itemId}")
     fun detail(
@@ -215,3 +235,13 @@ class InventoryItemController(
 private fun String?.redirectPath(): String = if (this == "shopping-list") "/shopping-list" else "/items"
 
 private class InvalidWebInputException(message: String) : RuntimeException(message)
+
+data class InventoryFilter(
+    var searchTerm: String? = null,
+    var sort: InventoryItemSort = InventoryItemSort.NAME,
+) {
+    fun reset() {
+        searchTerm = null
+        sort = InventoryItemSort.NAME
+    }
+}

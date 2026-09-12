@@ -211,6 +211,14 @@ h2 {
     gap: 0.8rem;
 }
 
+.toolbar .reset-filter {
+    order: 1;
+}
+
+.toolbar .filter-apply {
+    order: 2;
+}
+
 .item-form {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     margin-top: 1rem;
@@ -279,7 +287,7 @@ textarea {
 }
 
 .toolbar {
-    grid-template-columns: minmax(14rem, 1fr) minmax(14rem, 18rem) auto;
+    grid-template-columns: minmax(14rem, 1fr) minmax(14rem, 18rem) auto auto;
     align-items: end;
     border-block: 1px solid var(--line);
     padding: 1rem 0;

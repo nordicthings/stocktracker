@@ -9,4 +9,5 @@ class ShoppingListEmailProperties : ShoppingListEmailSettings {
     override var recipients: List<String> = emptyList()
     override var condition: ShoppingListEmailCondition = ShoppingListEmailCondition.CHANGED_ITEMS_BELOW_TARGET_STOCK
     var from: String = ""
+    var schedule: String = "-"
 }

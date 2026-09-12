@@ -155,6 +155,81 @@ class InventoryItemControllerTest @Autowired constructor(
     }
 
     @Test
+    fun `restores inventory filter after returning from another page`() {
+        post(
+            "/items",
+            form(
+                "name" to "Haferflocken",
+                "currentStock" to "2",
+                "minimumStock" to "3",
+                "targetStock" to "5",
+            ),
+        )
+        post(
+            "/items",
+            form(
+                "name" to "Reis",
+                "currentStock" to "2",
+                "minimumStock" to "3",
+                "targetStock" to "5",
+            ),
+        )
+
+        val filteredResponse = get("/items?searchTerm=Hafer&inventorySort=CURRENT_STOCK_DESCENDING")
+        assertContains(filteredResponse.body(), "Haferflocken")
+        assertFalse(filteredResponse.body().contains(">Reis<"))
+
+        val itemId = jpaRepository.findAll().first { it.name == "Haferflocken" }.id
+        val detailResponse = get("/items/$itemId")
+        assertEquals(200, detailResponse.statusCode())
+
+        val returnedResponse = get("/items")
+        assertContains(returnedResponse.body(), "Haferflocken")
+        assertFalse(returnedResponse.body().contains(">Reis<"))
+        assertTrue(
+            Regex("""<option[^>]*(value=\"CURRENT_STOCK_DESCENDING\"[^>]*selected=\"selected\"|selected=\"selected\"[^>]*value=\"CURRENT_STOCK_DESCENDING\")[^>]*>""")
+                .containsMatchIn(returnedResponse.body()),
+        )
+    }
+
+    @Test
+    fun `resets the stored inventory filter`() {
+        post(
+            "/items",
+            form(
+                "name" to "Haferflocken",
+                "currentStock" to "2",
+                "minimumStock" to "3",
+                "targetStock" to "5",
+            ),
+        )
+        post(
+            "/items",
+            form(
+                "name" to "Reis",
+                "currentStock" to "2",
+                "minimumStock" to "3",
+                "targetStock" to "5",
+            ),
+        )
+
+        get("/items?searchTerm=Hafer&inventorySort=CURRENT_STOCK_DESCENDING")
+        val resetResponse = get("/items?resetFilters=true")
+
+        assertContains(resetResponse.body(), "Haferflocken")
+        assertContains(resetResponse.body(), "Reis")
+        assertContains(resetResponse.body(), "name=\"resetFilters\" value=\"true\"")
+        assertTrue(
+            Regex("""<option[^>]*(value=\"NAME\"[^>]*selected=\"selected\"|selected=\"selected\"[^>]*value=\"NAME\")[^>]*>""")
+                .containsMatchIn(resetResponse.body()),
+        )
+        assertTrue(
+            resetResponse.body().indexOf("class=\"filter-apply\"") <
+                resetResponse.body().indexOf("class=\"secondary-action reset-filter\""),
+        )
+    }
+
+    @Test
     fun `focuses quick entry name field after creating item`() {
         val response = post(
             "/items",
