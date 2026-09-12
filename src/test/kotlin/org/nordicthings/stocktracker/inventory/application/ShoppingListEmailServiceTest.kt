@@ -8,6 +8,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 import org.nordicthings.stocktracker.inventory.domain.CurrentStock
+import org.nordicthings.stocktracker.inventory.domain.Category
+import org.nordicthings.stocktracker.inventory.domain.CategoryId
 import org.nordicthings.stocktracker.inventory.domain.InventoryItem
 import org.nordicthings.stocktracker.inventory.domain.InventoryItemId
 import org.nordicthings.stocktracker.inventory.domain.ItemName
@@ -89,6 +91,7 @@ class ShoppingListEmailServiceTest {
         condition: ShoppingListEmailCondition = ShoppingListEmailCondition.CHANGED_ITEMS_BELOW_TARGET_STOCK,
     ): ShoppingListEmailService = ShoppingListEmailService(
         FakeInventoryItemRepository(items),
+        FakeCategoryRepository(),
         dispatches,
         sender,
         object : ShoppingListEmailSettings {
@@ -105,6 +108,7 @@ class ShoppingListEmailServiceTest {
         targetStock: Int = 5,
     ): InventoryItem = InventoryItem.create(
         ItemName.of(name),
+        Category.SYSTEM_CATEGORY_ID,
         CurrentStock.of(currentStock),
         MinimumStock.of(minimumStock),
         TargetStock.of(targetStock),
@@ -143,7 +147,19 @@ class ShoppingListEmailServiceTest {
         override fun findAll(): List<InventoryItem> = items
         override fun findAllUpdatedAfter(instant: Instant): List<InventoryItem> = items
         override fun deleteById(id: InventoryItemId) = error("Not used")
+        override fun existsByCategoryId(categoryId: CategoryId): Boolean = items.any { it.categoryId == categoryId }
         override fun existsByNormalizedName(normalizedName: String): Boolean = false
         override fun existsByNormalizedNameExcludingId(normalizedName: String, excludedId: InventoryItemId): Boolean = false
+    }
+
+    private class FakeCategoryRepository : CategoryRepository {
+        private val category = Category.reconstitute(Category.SYSTEM_CATEGORY_ID, Category.SYSTEM_CATEGORY_NAME)
+
+        override fun save(category: Category): Category = error("Not used")
+        override fun findById(id: CategoryId): Category? = if (id == category.id) category else null
+        override fun findAll(): List<Category> = listOf(category)
+        override fun deleteById(id: CategoryId) = error("Not used")
+        override fun existsByNormalizedName(normalizedName: String): Boolean = false
+        override fun existsByNormalizedNameExcludingId(normalizedName: String, excludedId: CategoryId): Boolean = false
     }
 }

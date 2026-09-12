@@ -211,6 +211,10 @@ h2 {
     gap: 0.8rem;
 }
 
+.toolbar select {
+    font-weight: 400;
+}
+
 .toolbar .reset-filter {
     order: 1;
 }
@@ -230,7 +234,7 @@ h2 {
 
 .quick-entry-row {
     display: grid;
-    grid-template-columns: minmax(16rem, 1.5fr) repeat(3, minmax(8rem, 1fr)) auto;
+    grid-template-columns: minmax(14rem, 1.5fr) minmax(10rem, 1fr) repeat(3, minmax(8rem, 1fr)) auto;
     gap: 0.75rem;
     align-items: end;
     padding: 1rem;
@@ -266,7 +270,14 @@ textarea {
 }
 
 .item-form input,
+.item-form select,
 .item-form textarea {
+    font-weight: 400;
+}
+
+.quick-entry-row input,
+.quick-entry-row select,
+.quick-entry-row textarea {
     font-weight: 400;
 }
 
@@ -325,11 +336,6 @@ textarea {
     min-width: 560px;
 }
 
-.shopping-list-table th:nth-child(2),
-.shopping-list-table td:nth-child(2) {
-    text-align: center;
-}
-
 .inventory-page .shopping-list {
     min-height: 0;
     overflow: auto;
@@ -350,7 +356,7 @@ textarea {
 
 .inventory-table {
     width: 100%;
-    min-width: 920px;
+    min-width: 1080px;
     border-collapse: separate;
     border-spacing: 0;
 }
@@ -364,12 +370,14 @@ textarea {
     white-space: nowrap;
 }
 
-.inventory-table th:nth-child(2),
-.inventory-table th:nth-child(3),
-.inventory-table th:nth-child(4),
-.inventory-table td:nth-child(2),
-.inventory-table td:nth-child(3),
-.inventory-table td:nth-child(4) {
+.inventory-table:not(.shopping-list-table):not(.category-table) th:nth-child(3),
+.inventory-table:not(.shopping-list-table):not(.category-table) th:nth-child(4),
+.inventory-table:not(.shopping-list-table):not(.category-table) th:nth-child(5),
+.inventory-table:not(.shopping-list-table):not(.category-table) td:nth-child(3),
+.inventory-table:not(.shopping-list-table):not(.category-table) td:nth-child(4),
+.inventory-table:not(.shopping-list-table):not(.category-table) td:nth-child(5),
+.shopping-list-table th:nth-child(3),
+.shopping-list-table td:nth-child(3) {
     text-align: center;
 }
 
@@ -377,9 +385,35 @@ textarea {
     position: sticky;
     top: 0;
     z-index: 10;
-    background: var(--surface);
+    background: #f5f6f8;
     color: var(--muted);
     font-weight: 800;
+}
+
+.inventory-table th a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.inventory-table th a:hover {
+    color: var(--text);
+    text-decoration: underline;
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.category-table {
+    min-width: 520px;
+}
+
+.category-table th:nth-child(2),
+.category-table td:nth-child(2) {
+    text-align: center;
 }
 
 .inventory-table td {

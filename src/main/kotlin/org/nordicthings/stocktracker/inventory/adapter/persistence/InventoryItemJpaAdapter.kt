@@ -4,6 +4,7 @@ import java.time.Clock
 import org.nordicthings.stocktracker.inventory.application.InventoryItemRepository
 import org.nordicthings.stocktracker.inventory.domain.InventoryItem
 import org.nordicthings.stocktracker.inventory.domain.InventoryItemId
+import org.nordicthings.stocktracker.inventory.domain.CategoryId
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 
@@ -40,6 +41,9 @@ class InventoryItemJpaAdapter(
     @Transactional(readOnly = true)
     override fun findAllUpdatedAfter(instant: java.time.Instant): List<InventoryItem> =
         jpaRepository.findAllByUpdatedAtAfter(instant).map(mapper::toDomain)
+
+    @Transactional(readOnly = true)
+    override fun existsByCategoryId(categoryId: CategoryId): Boolean = jpaRepository.existsByCategoryId(categoryId.value)
 
     @Transactional
     override fun deleteById(id: InventoryItemId) {

@@ -5,6 +5,15 @@ open class InventoryException(message: String) : RuntimeException(message)
 class InvalidInventoryItemIdException(value: String) :
     InventoryException("Inventory item id must be a valid UUID: '$value'.")
 
+class InvalidCategoryIdException(value: String) :
+    InventoryException("Category id must be a valid UUID: '$value'.")
+
+class InvalidCategoryNameException : InventoryException("Category name must not be blank.")
+
+class CategoryNameTooLongException : InventoryException("Category name must not exceed 30 characters.")
+
+class SystemCategoryModificationException : InventoryException("The system category must not be changed.")
+
 class InvalidItemNameException :
     InventoryException("Item name must not be blank.")
 

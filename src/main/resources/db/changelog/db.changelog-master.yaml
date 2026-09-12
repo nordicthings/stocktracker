@@ -3,3 +3,5 @@ databaseChangeLog:
       file: db/changelog/001-create-inventory-items.yaml
   - include:
       file: db/changelog/002-create-shopping-list-email-dispatches.yaml
+  - include:
+      file: db/changelog/003-add-categories.yaml

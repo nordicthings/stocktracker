@@ -47,3 +47,13 @@ interface ViewInventoryItemsUseCase {
 interface ViewShoppingListUseCase {
     fun viewShoppingList(query: ShoppingListQuery = ShoppingListQuery()): List<ShoppingListItemView>
 }
+
+interface CreateCategoryUseCase { fun create(command: CreateCategoryCommand): CategoryView }
+
+interface EditCategoryUseCase { fun edit(command: EditCategoryCommand): CategoryView }
+
+interface DeleteCategoryUseCase { fun delete(categoryId: String) }
+
+interface ViewCategoryUseCase { fun viewCategory(categoryId: String): CategoryView }
+
+interface ViewCategoriesUseCase { fun viewCategories(sort: CategorySort = CategorySort.NAME_ASCENDING): List<CategoryView> }

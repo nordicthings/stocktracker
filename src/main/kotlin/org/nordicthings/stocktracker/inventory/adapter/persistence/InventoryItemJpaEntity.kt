@@ -19,6 +19,9 @@ class InventoryItemJpaEntity(
     @Column(name = "normalized_name", nullable = false, unique = true, length = 255)
     var normalizedName: String,
 
+    @Column(name = "category_id", nullable = false, length = 36)
+    var categoryId: String,
+
     @Column(name = "current_stock", nullable = false)
     var currentStock: Int,
 

@@ -1,0 +1,63 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-add-categories
+      author: jens
+      changes:
+        - createTable:
+            tableName: categories
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_categories
+              - column:
+                  name: name
+                  type: varchar(30)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: normalized_name
+                  type: varchar(30)
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: categories
+            columnNames: normalized_name
+            constraintName: uk_categories_normalized_name
+        - insert:
+            tableName: categories
+            columns:
+              - column:
+                  name: id
+                  value: 00000000-0000-0000-0000-000000000001
+              - column:
+                  name: name
+                  value: --ohne--
+              - column:
+                  name: normalized_name
+                  value: --ohne--
+        - addColumn:
+            tableName: inventory_items
+            columns:
+              - column:
+                  name: category_id
+                  type: varchar(36)
+        - update:
+            tableName: inventory_items
+            columns:
+              - column:
+                  name: category_id
+                  value: 00000000-0000-0000-0000-000000000001
+        - addNotNullConstraint:
+            tableName: inventory_items
+            columnName: category_id
+            columnDataType: varchar(36)
+        - addForeignKeyConstraint:
+            baseTableName: inventory_items
+            baseColumnNames: category_id
+            constraintName: fk_inventory_items_category
+            referencedTableName: categories
+            referencedColumnNames: id

@@ -35,7 +35,8 @@ class ShoppingListController(
         }
 
         model.addAttribute("shoppingSort", selectedShoppingSort)
-        model.addAttribute("shoppingSorts", ShoppingListSort.entries)
+        model.addAttribute("nextNameSort", selectedShoppingSort.nextNameSort())
+        model.addAttribute("nextCategorySort", selectedShoppingSort.nextCategorySort())
         model.addAttribute("shoppingList", shoppingList)
 
         return "inventory/shopping-list"
@@ -73,8 +74,14 @@ class ShoppingListController(
     }
 
     private fun String?.toShoppingListSort(): ShoppingListSort =
-        enumValueOrDefault(this, ShoppingListSort.NAME)
+        enumValueOrDefault(this, ShoppingListSort.CATEGORY_ASCENDING)
 
     private inline fun <reified T : Enum<T>> enumValueOrDefault(value: String?, default: T): T =
         value?.let { candidate -> T::class.java.enumConstants.firstOrNull { it.name == candidate } } ?: default
 }
+
+private fun ShoppingListSort.nextNameSort(): ShoppingListSort =
+    if (this == ShoppingListSort.NAME_ASCENDING) ShoppingListSort.NAME_DESCENDING else ShoppingListSort.NAME_ASCENDING
+
+private fun ShoppingListSort.nextCategorySort(): ShoppingListSort =
+    if (this == ShoppingListSort.CATEGORY_ASCENDING) ShoppingListSort.CATEGORY_DESCENDING else ShoppingListSort.CATEGORY_ASCENDING

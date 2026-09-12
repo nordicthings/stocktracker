@@ -239,15 +239,15 @@ Das Ergebnis jedes Mailversands wird ebenfalls im Anwendungslog festgehalten. Da
 - Der Sollbestand muss größer oder gleich dem Mindestbestand sein.
 - Der Istbestand darf größer als der Sollbestand sein.
 - Ein Lagerort wird nicht verwaltet.
-- Kategorien werden in der ersten Version nicht verwaltet.
+- Ab Version 1.2 hat jeder Artikel genau eine verpflichtende Kategorie.
 - Die Einkaufsliste ist in der ersten Version eine reine Ableitung aus den Artikel-Istbeständen.
 - Benachrichtigung bedeutet in Version 1 ausschließlich eine deutliche Anzeige innerhalb der Anwendung.
 - In Version 1 gibt es keine Benutzerverwaltung und keine Unterscheidung nach Haushaltsmitgliedern.
 - Mindesthaltbarkeitsdaten oder Ablaufdaten werden in Version 1 nicht verwaltet.
 - Artikel werden in Version 1 hart gelöscht und nicht archiviert.
 - Istbestandsänderungen werden in Version 1 nicht historisiert.
-- Vorratsliste und Einkaufsliste werden standardmäßig alphabetisch nach Artikelname sortiert.
-- Die Sortierung der Listen kann in Version 1 in der Oberfläche geändert werden.
+- Ab Version 1.2 ist die Bestandsliste standardmäßig alphabetisch nach Artikelname sortiert. Die Einkaufsliste ist standardmäßig alphabetisch nach Kategorie und innerhalb der Kategorie nach Artikelname sortiert.
+- Ab Version 1.2 können Bestands- und Einkaufsliste durch Klick auf Artikel- oder Kategorie-Spaltenkopf auf- und absteigend sortiert werden. Bei Kategoriesortierung werden Artikel innerhalb der Kategorie nach Artikelname sortiert.
 - In Version 1 wird eine einfache Textsuche nach Artikelname unterstützt.
 - Bestandsliste und Einkaufsliste sind getrennte Seiten unter `/items` und `/shopping-list`.
 - Ab Version 1.1 kann der Istbestand eines Artikels aus der Einkaufsliste auf den Sollbestand gesetzt werden.
@@ -257,10 +257,13 @@ Das Ergebnis jedes Mailversands wird ebenfalls im Anwendungslog festgehalten. Da
 - Ab Version 1.1 löst der automatische Versand nur dann eine E-Mail aus, wenn sich seit dem letzten Versand relevante Artikelbestände geändert haben und die konfigurierte Versandbedingung erfüllt ist.
 - Ab Version 1.1 wird das Ergebnis jeder automatischen Versandprüfung im Anwendungslog protokolliert.
 - Ab Version 1.1 wird das Ergebnis jedes Mailversands im Anwendungslog protokolliert.
+- Ab Version 1.2 gibt es eine Kategorienpflege mit Erstellen, Ändern und Löschen leerer Kategorien. Kategorienamen folgen den Regeln für Artikelnamen und sind auf 30 Zeichen begrenzt.
+- Ab Version 1.2 existiert die geschützte Systemkategorie `--ohne--`. Sie wird neuen Artikeln vorbelegt, kann nicht geändert oder gelöscht werden und erhält bei der Migration alle vorhandenen Artikel.
+- Ab Version 1.2 können Bestandslisten nach Artikelname und Kategorie gefiltert werden; beide Filter sind UND-verknüpft und werden beim Zurücksetzen gemeinsam geleert.
+- Ab Version 1.2 zeigen Bestandsliste, Einkaufsliste und E-Mail-Einkaufsliste die Kategorie. Die E-Mail-Einkaufsliste ist nach Kategorie und Artikelname sortiert.
 
 ## Offene Fragen
 
-- Welche Kategorien sollen in Version 1.2 ergänzt werden?
 - Sollen spätere Versionen manuelle Interaktionen mit der Einkaufsliste unterstützen, z. B. Ergänzen, Abhaken oder automatische Istbestandsaktualisierung?
 - Wie soll in einer späteren Version der Verbrauch getrackt werden, um Altbestände ohne Verbrauch zu erkennen?
 

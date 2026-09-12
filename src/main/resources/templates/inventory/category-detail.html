@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title th:text="${category == null ? 'Kategorie erfassen' : category.name + ' bearbeiten'}">Kategorie</title><link rel="stylesheet" th:href="@{/css/inventory.css}"></head>
+<body><main class="page-shell detail-shell"><header class="page-header"><div><p class="eyebrow">Nordic Things</p><h1 th:text="${category == null ? 'Kategorie erfassen' : category.name}">Kategorie</h1></div><a class="secondary-action" th:href="@{/categories}">Zurück</a></header>
+<section class="message success" th:if="${successMessage}" th:text="${successMessage}"></section>
+<section class="message error" th:if="${errorMessage}" th:text="${errorMessage}"></section>
+<section class="detail-panel"><form id="category-form" class="item-form compact" method="post" th:action="${category == null} ? @{/categories} : @{/categories/{categoryId}(categoryId=${category.id})}"><label class="wide"><span>Name</span><input name="name" required maxlength="30" th:value="${category == null ? '' : category.name}" th:readonly="${category != null && category.isSystemCategory}"></label></form>
+<div class="detail-actions"><button th:if="${category == null || !category.isSystemCategory}" type="submit" form="category-form" th:text="${category == null ? 'Kategorie anlegen' : 'Änderungen speichern'}">Speichern</button><form th:if="${category != null && !category.isSystemCategory}" method="post" th:action="@{/categories/{categoryId}/delete(categoryId=${category.id})}"><button class="danger" type="submit">Löschen</button></form></div></section>
+</main></body></html>

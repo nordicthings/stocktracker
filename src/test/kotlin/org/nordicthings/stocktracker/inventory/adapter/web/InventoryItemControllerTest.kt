@@ -75,7 +75,9 @@ class InventoryItemControllerTest @Autowired constructor(
         assertContains(createResponse.body(), "Nudeln (500g)")
         assertContains(createResponse.body(), "Nachkaufbedarf")
         assertContains(createResponse.body(), "1 Artikel unter Mindestbestand")
-        assertContains(createResponse.body(), "<th scope=\"col\">Artikel</th>")
+        assertContains(createResponse.body(), "<th scope=\"col\"><a")
+        assertContains(createResponse.body(), ">Artikel</a></th>")
+        assertContains(createResponse.body(), ">Kategorie</a></th>")
         assertContains(createResponse.body(), "<th scope=\"col\">Ist</th>")
         assertContains(createResponse.body(), "<th scope=\"col\">Soll</th>")
         assertContains(createResponse.body(), "<th scope=\"col\" aria-label=\"Aktionen\"></th>")
@@ -175,7 +177,7 @@ class InventoryItemControllerTest @Autowired constructor(
             ),
         )
 
-        val filteredResponse = get("/items?searchTerm=Hafer&inventorySort=CURRENT_STOCK_DESCENDING")
+        val filteredResponse = get("/items?searchTerm=Hafer&inventorySort=NAME_DESCENDING")
         assertContains(filteredResponse.body(), "Haferflocken")
         assertFalse(filteredResponse.body().contains(">Reis<"))
 
@@ -187,8 +189,7 @@ class InventoryItemControllerTest @Autowired constructor(
         assertContains(returnedResponse.body(), "Haferflocken")
         assertFalse(returnedResponse.body().contains(">Reis<"))
         assertTrue(
-            Regex("""<option[^>]*(value=\"CURRENT_STOCK_DESCENDING\"[^>]*selected=\"selected\"|selected=\"selected\"[^>]*value=\"CURRENT_STOCK_DESCENDING\")[^>]*>""")
-                .containsMatchIn(returnedResponse.body()),
+            returnedResponse.body().contains("inventorySort=NAME_ASCENDING"),
         )
     }
 
@@ -213,15 +214,14 @@ class InventoryItemControllerTest @Autowired constructor(
             ),
         )
 
-        get("/items?searchTerm=Hafer&inventorySort=CURRENT_STOCK_DESCENDING")
+        get("/items?searchTerm=Hafer&inventorySort=NAME_DESCENDING")
         val resetResponse = get("/items?resetFilters=true")
 
         assertContains(resetResponse.body(), "Haferflocken")
         assertContains(resetResponse.body(), "Reis")
         assertContains(resetResponse.body(), "name=\"resetFilters\" value=\"true\"")
         assertTrue(
-            Regex("""<option[^>]*(value=\"NAME\"[^>]*selected=\"selected\"|selected=\"selected\"[^>]*value=\"NAME\")[^>]*>""")
-                .containsMatchIn(resetResponse.body()),
+            resetResponse.body().contains("inventorySort=NAME_DESCENDING"),
         )
         assertTrue(
             resetResponse.body().indexOf("class=\"filter-apply\"") <
@@ -459,6 +459,20 @@ class InventoryItemControllerTest @Autowired constructor(
         assertEquals(200, deleteResponse.statusCode())
         assertFalse(deleteResponse.body().contains("Artikel wurde gelöscht."))
         assertContains(deleteResponse.body(), "Noch keine Artikel vorhanden.")
+    }
+
+    @Test
+    fun `creates and lists categories`() {
+        val newCategoryPage = get("/categories/new")
+        assertEquals(200, newCategoryPage.statusCode())
+        assertContains(newCategoryPage.body(), "Kategorie erfassen")
+
+        val response = post("/categories", form("name" to "Konserven"))
+
+        assertEquals(200, response.statusCode())
+        assertContains(response.body(), "Konserven")
+        assertContains(response.body(), "--ohne--")
+        assertContains(response.body(), "Artikel")
     }
 
     private fun get(path: String): HttpResponse<String> {

@@ -20,14 +20,6 @@
     <section class="message error" th:if="${errorMessage}" th:text="${errorMessage}"></section>
 
     <section class="workspace" id="shopping-workspace">
-        <form class="toolbar" method="get" th:action="@{/shopping-list}">
-            <label><span>Sortierung</span><select name="shoppingSort">
-                <option th:each="sort : ${shoppingSorts}" th:value="${sort}" th:selected="${sort == shoppingSort}"
-                        th:text="${sort.name() == 'NAME' ? 'Artikelname' : sort.name() == 'RECOMMENDED_PURCHASE_QUANTITY_DESCENDING' ? 'größte Einkaufsmenge zuerst' : 'kleinste Einkaufsmenge zuerst'}"></option>
-            </select></label>
-            <button type="submit">Anzeigen</button>
-        </form>
-
         <div class="shopping-list-actions">
             <form method="post" th:action="@{/shopping-list/email}"><button type="submit">Per E-Mail versenden</button></form>
             <form method="post" th:action="@{/shopping-list/fill-to-target}" onsubmit="return confirm('Alle Einkaufslistenpositionen auf Sollbestand setzen?');"><button type="submit">Alles auf Sollbestand</button></form>
@@ -35,11 +27,11 @@
 
         <div class="inventory-table-wrap">
             <table class="inventory-table shopping-list-table">
-                <thead><tr><th scope="col">Artikel</th><th scope="col">Einkaufsmenge</th><th scope="col" aria-label="Aktionen"></th></tr></thead>
+                <thead><tr><th scope="col"><a th:href="@{/shopping-list(shoppingSort=${nextNameSort})}">Artikel</a></th><th scope="col"><a th:href="@{/shopping-list(shoppingSort=${nextCategorySort})}">Kategorie</a></th><th scope="col">Einkaufsmenge</th><th scope="col" aria-label="Aktionen"></th></tr></thead>
                 <tbody>
                 <tr th:each="item : ${shoppingList}">
                     <td th:text="${item.itemName}">Reis</td>
-                    <td th:text="${item.recommendedPurchaseQuantity}">2</td>
+                    <td th:text="${item.categoryName}">Konserven</td><td th:text="${item.recommendedPurchaseQuantity}">2</td>
                     <td><div class="table-actions"><form method="post" th:action="@{/items/{itemId}/stock/fill-to-target(itemId=${item.itemId})}"><input type="hidden" name="returnTo" value="shopping-list"><button type="submit">Auf Sollbestand</button></form></div></td>
                 </tr>
                 </tbody>

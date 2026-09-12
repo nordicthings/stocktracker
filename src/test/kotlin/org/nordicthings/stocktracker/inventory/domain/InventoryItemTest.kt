@@ -26,6 +26,7 @@ class InventoryItemTest {
         val item = InventoryItem.reconstitute(
             id = id,
             name = ItemName.of("Nudeln (500g)"),
+            categoryId = Category.SYSTEM_CATEGORY_ID,
             currentStock = CurrentStock.of(2),
             minimumStock = MinimumStock.of(3),
             targetStock = TargetStock.of(5),
@@ -178,6 +179,7 @@ class InventoryItemTest {
 
         val updatedItem = item.edit(
             name = ItemName.of("Spaghetti (500g)"),
+            categoryId = Category.SYSTEM_CATEGORY_ID,
             currentStock = CurrentStock.of(3),
             minimumStock = MinimumStock.of(4),
             targetStock = TargetStock.of(6),
@@ -230,6 +232,7 @@ class InventoryItemTest {
         note: ItemNote? = null,
     ): InventoryItem = InventoryItem.create(
         name = name,
+        categoryId = Category.SYSTEM_CATEGORY_ID,
         currentStock = currentStock,
         minimumStock = minimumStock,
         targetStock = targetStock,

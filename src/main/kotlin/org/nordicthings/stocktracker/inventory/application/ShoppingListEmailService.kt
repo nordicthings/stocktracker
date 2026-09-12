@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service
 @Service
 class ShoppingListEmailService(
     private val inventoryItemRepository: InventoryItemRepository,
+    private val categoryRepository: CategoryRepository,
     private val dispatchRepository: ShoppingListEmailDispatchRepository,
     private val emailSender: ShoppingListEmailSender,
     private val settings: ShoppingListEmailSettings,
@@ -49,9 +50,11 @@ class ShoppingListEmailService(
             throw ShoppingListEmailConfigurationException("No shopping-list email recipients are configured.")
         }
 
+        val categoriesById = categoryRepository.findAll().associateBy { it.id }
         val shoppingList = inventoryItemRepository.findAll()
             .filter { it.isBelowTargetStock }
-            .sortedBy { it.name.normalizedValue }
+            .sortedWith(compareBy<InventoryItem> { categoriesById.getValue(it.categoryId).name.normalizedValue }
+                .thenBy { it.name.normalizedValue })
         if (shoppingList.isEmpty()) {
             throw EmptyShoppingListException()
         }
@@ -62,7 +65,11 @@ class ShoppingListEmailService(
             recipients = recipients,
             subject = "Einkaufsliste #$dispatchNumber",
             items = shoppingList.map { item ->
-                ShoppingListEmailItem(item.name.value, item.targetStock.value - item.currentStock.value)
+                ShoppingListEmailItem(
+                    itemName = item.name.value,
+                    categoryName = categoriesById.getValue(item.categoryId).name.value,
+                    purchaseQuantity = item.targetStock.value - item.currentStock.value,
+                )
             },
         )
 

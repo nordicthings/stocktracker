@@ -12,12 +12,15 @@ import org.nordicthings.stocktracker.inventory.application.IncreaseCurrentStockU
 import org.nordicthings.stocktracker.inventory.application.InventoryApplicationException
 import org.nordicthings.stocktracker.inventory.application.InventoryItemSort
 import org.nordicthings.stocktracker.inventory.application.InventoryItemsQuery
+import org.nordicthings.stocktracker.inventory.application.ViewCategoriesUseCase
+import org.nordicthings.stocktracker.inventory.application.CategorySort
 import org.nordicthings.stocktracker.inventory.application.SetCurrentStockCommand
 import org.nordicthings.stocktracker.inventory.application.SetCurrentStockUseCase
 import org.nordicthings.stocktracker.inventory.application.SetStockToTargetUseCase
 import org.nordicthings.stocktracker.inventory.application.ViewInventoryItemUseCase
 import org.nordicthings.stocktracker.inventory.application.ViewInventoryItemsUseCase
 import org.nordicthings.stocktracker.inventory.domain.InventoryException
+import org.nordicthings.stocktracker.inventory.domain.Category
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.ui.Model
@@ -40,6 +43,7 @@ class InventoryItemController(
     private val decreaseCurrentStock: DecreaseCurrentStockUseCase,
     private val viewInventoryItem: ViewInventoryItemUseCase,
     private val viewInventoryItems: ViewInventoryItemsUseCase,
+    private val viewCategories: ViewCategoriesUseCase,
 ) {
 
     @GetMapping("/")
@@ -49,6 +53,7 @@ class InventoryItemController(
     fun items(
         @RequestParam(required = false) searchTerm: String?,
         @RequestParam(required = false) inventorySort: String?,
+        @RequestParam(required = false) categoryId: String?,
         @RequestParam(defaultValue = "false") resetFilters: Boolean,
         @ModelAttribute("inventoryFilter") inventoryFilter: InventoryFilter,
         model: Model,
@@ -62,17 +67,24 @@ class InventoryItemController(
             if (inventorySort != null) {
                 inventoryFilter.sort = inventorySort.toInventoryItemSort()
             }
+            if (categoryId != null) {
+                inventoryFilter.categoryId = categoryId.ifBlank { null }
+            }
         }
 
         val selectedInventorySort = inventoryFilter.sort
         val selectedSearchTerm = inventoryFilter.searchTerm
+        val selectedCategoryId = inventoryFilter.categoryId
         val inventoryOverview = viewInventoryItems.viewInventoryItems(
-            InventoryItemsQuery(searchTerm = selectedSearchTerm, sort = selectedInventorySort),
+            InventoryItemsQuery(searchTerm = selectedSearchTerm, categoryId = selectedCategoryId, sort = selectedInventorySort),
         )
 
         model.addAttribute("searchTerm", selectedSearchTerm.orEmpty())
         model.addAttribute("inventorySort", selectedInventorySort)
-        model.addAttribute("inventorySorts", InventoryItemSort.entries)
+        model.addAttribute("categoryId", selectedCategoryId.orEmpty())
+        model.addAttribute("categories", viewCategories.viewCategories(CategorySort.NAME_ASCENDING))
+        model.addAttribute("nextNameSort", selectedInventorySort.nextNameSort())
+        model.addAttribute("nextCategorySort", selectedInventorySort.nextCategorySort())
         model.addAttribute("inventoryOverview", inventoryOverview)
         if (!model.containsAttribute("focusTarget") && searchTerm != null) {
             model.addAttribute("focusTarget", "inventorySearch")
@@ -92,6 +104,7 @@ class InventoryItemController(
     ): String {
         try {
             model.addAttribute("item", viewInventoryItem.viewInventoryItem(itemId))
+            model.addAttribute("categories", viewCategories.viewCategories(CategorySort.NAME_ASCENDING))
         } catch (exception: InventoryApplicationException) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.toUserMessage())
             return "redirect:/items"
@@ -109,6 +122,7 @@ class InventoryItemController(
         @RequestParam currentStock: String,
         @RequestParam minimumStock: String,
         @RequestParam targetStock: String,
+        @RequestParam(required = false) categoryId: String?,
         redirectAttributes: RedirectAttributes,
     ): String = handleInventoryAction(
         redirectAttributes = redirectAttributes,
@@ -118,6 +132,7 @@ class InventoryItemController(
         createInventoryItem.create(
             CreateInventoryItemCommand(
                 name = name,
+                categoryId = categoryId ?: Category.SYSTEM_CATEGORY_ID.value,
                 currentStock = currentStock.toRequiredInt("Istbestand"),
                 minimumStock = minimumStock.toRequiredInt("Mindestbestand"),
                 targetStock = targetStock.toRequiredInt("Sollbestand"),
@@ -133,6 +148,7 @@ class InventoryItemController(
         @RequestParam currentStock: String,
         @RequestParam minimumStock: String,
         @RequestParam targetStock: String,
+        @RequestParam(required = false) categoryId: String?,
         @RequestParam(required = false) note: String?,
         redirectAttributes: RedirectAttributes,
     ): String = handleInventoryAction(redirectAttributes, "Artikel wurde aktualisiert.", "/items/$itemId") {
@@ -140,6 +156,7 @@ class InventoryItemController(
             EditInventoryItemCommand(
                 itemId = itemId,
                 name = name,
+                categoryId = categoryId ?: viewInventoryItem.viewInventoryItem(itemId).categoryId,
                 currentStock = currentStock.toRequiredInt("Istbestand"),
                 minimumStock = minimumStock.toRequiredInt("Mindestbestand"),
                 targetStock = targetStock.toRequiredInt("Sollbestand"),
@@ -223,7 +240,7 @@ class InventoryItemController(
     }
 
     private fun String?.toInventoryItemSort(): InventoryItemSort =
-        enumValueOrDefault(this, InventoryItemSort.NAME)
+        enumValueOrDefault(this, InventoryItemSort.NAME_ASCENDING)
 
     private inline fun <reified T : Enum<T>> enumValueOrDefault(value: String?, default: T): T =
         value?.let { candidate -> T::class.java.enumConstants.firstOrNull { it.name == candidate } } ?: default
@@ -238,10 +255,18 @@ private class InvalidWebInputException(message: String) : RuntimeException(messa
 
 data class InventoryFilter(
     var searchTerm: String? = null,
-    var sort: InventoryItemSort = InventoryItemSort.NAME,
+    var categoryId: String? = null,
+    var sort: InventoryItemSort = InventoryItemSort.NAME_ASCENDING,
 ) {
     fun reset() {
         searchTerm = null
-        sort = InventoryItemSort.NAME
+        categoryId = null
+        sort = InventoryItemSort.NAME_ASCENDING
     }
 }
+
+private fun InventoryItemSort.nextNameSort(): InventoryItemSort =
+    if (this == InventoryItemSort.NAME_ASCENDING) InventoryItemSort.NAME_DESCENDING else InventoryItemSort.NAME_ASCENDING
+
+private fun InventoryItemSort.nextCategorySort(): InventoryItemSort =
+    if (this == InventoryItemSort.CATEGORY_ASCENDING) InventoryItemSort.CATEGORY_DESCENDING else InventoryItemSort.CATEGORY_ASCENDING

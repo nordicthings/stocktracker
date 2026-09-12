@@ -1,6 +1,7 @@
 package org.nordicthings.stocktracker.inventory.application
 
 import org.nordicthings.stocktracker.inventory.domain.InventoryItemId
+import org.nordicthings.stocktracker.inventory.domain.CategoryId
 
 open class InventoryApplicationException(message: String) : RuntimeException(message)
 
@@ -12,6 +13,17 @@ class DuplicateItemNameException(name: String) :
 
 class DeleteInventoryItemNotConfirmedException :
     InventoryApplicationException("Deleting an inventory item requires confirmation.")
+
+class CategoryNotFoundException(id: CategoryId) : InventoryApplicationException("Category not found: '$id'.")
+
+class DuplicateCategoryNameException(name: String) :
+    InventoryApplicationException("A category with the name '$name' already exists.")
+
+class CategoryContainsInventoryItemsException :
+    InventoryApplicationException("A category containing inventory items must not be deleted.")
+
+class SystemCategoryDeletionException :
+    InventoryApplicationException("The system category must not be deleted.")
 
 class SetShoppingListToTargetNotConfirmedException :
     InventoryApplicationException("Setting all shopping list items to target stock requires confirmation.")

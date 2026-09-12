@@ -25,7 +25,7 @@ class SpringMailShoppingListEmailSenderTest {
             dispatchNumber = 42,
             recipients = listOf("recipient@example.test"),
             subject = "Einkaufsliste #42",
-            items = listOf(ShoppingListEmailItem("Nudeln", 3)),
+            items = listOf(ShoppingListEmailItem("Nudeln", "--ohne--", 3)),
         )
 
         SpringMailShoppingListEmailSender(mailSender, properties).send(email)

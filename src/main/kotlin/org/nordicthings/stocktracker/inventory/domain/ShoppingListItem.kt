@@ -6,6 +6,7 @@ import org.jmolecules.ddd.annotation.ValueObject
 class ShoppingListItem(
     val itemId: InventoryItemId,
     val itemName: ItemName,
+    val categoryId: CategoryId,
     val currentStock: CurrentStock,
     val minimumStock: MinimumStock,
     val targetStock: TargetStock,

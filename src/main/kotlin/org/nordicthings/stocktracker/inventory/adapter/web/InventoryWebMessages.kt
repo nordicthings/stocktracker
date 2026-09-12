@@ -4,6 +4,7 @@ import org.nordicthings.stocktracker.inventory.application.DeleteInventoryItemNo
 import org.nordicthings.stocktracker.inventory.application.DuplicateItemNameException
 import org.nordicthings.stocktracker.inventory.application.InventoryApplicationException
 import org.nordicthings.stocktracker.inventory.application.InventoryItemNotFoundException
+import org.nordicthings.stocktracker.inventory.application.CategoryContainsInventoryItemsException
 import org.nordicthings.stocktracker.inventory.domain.InvalidCurrentStockException
 import org.nordicthings.stocktracker.inventory.domain.InvalidInventoryItemIdException
 import org.nordicthings.stocktracker.inventory.domain.InvalidItemNameException
@@ -21,6 +22,7 @@ fun InventoryApplicationException.toUserMessage(): String = when (this) {
     is DuplicateItemNameException -> "Ein Artikel mit diesem Namen existiert bereits."
     is DeleteInventoryItemNotConfirmedException -> "Der Artikel wurde nicht gelöscht, weil die Bestätigung fehlt."
     is InventoryItemNotFoundException -> "Der Artikel wurde nicht gefunden."
+    is CategoryContainsInventoryItemsException -> "Dieser Kategorie sind noch Artikel zugeordnet, Löschen nicht möglich."
     is SetShoppingListToTargetNotConfirmedException -> "Bitte bestätige das Setzen aller Positionen auf Sollbestand."
     is EmptyShoppingListException -> "Die Einkaufsliste ist leer."
     is ShoppingListEmailConfigurationException -> "Der E-Mail-Versand ist nicht vollständig konfiguriert."

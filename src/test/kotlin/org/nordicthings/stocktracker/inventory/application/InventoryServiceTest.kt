@@ -7,13 +7,15 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 import org.nordicthings.stocktracker.inventory.domain.InventoryItem
 import org.nordicthings.stocktracker.inventory.domain.InventoryItemId
+import org.nordicthings.stocktracker.inventory.domain.Category
+import org.nordicthings.stocktracker.inventory.domain.CategoryId
 
 class InventoryServiceTest {
 
     @Test
     fun `creates an item and returns its view`() {
         val repository = FakeInventoryItemRepository()
-        val service = InventoryService(repository)
+        val service = inventoryService(repository)
 
         val item = service.create(createCommand(name = "Nudeln (500g)"))
 
@@ -27,7 +29,7 @@ class InventoryServiceTest {
     @Test
     fun `rejects creating an item with an existing normalized name`() {
         val repository = FakeInventoryItemRepository()
-        val service = InventoryService(repository)
+        val service = inventoryService(repository)
         service.create(createCommand(name = "Nudeln (500g)"))
 
         assertFailsWith<DuplicateItemNameException> {
@@ -38,13 +40,14 @@ class InventoryServiceTest {
     @Test
     fun `edits item data including current stock`() {
         val repository = FakeInventoryItemRepository()
-        val service = InventoryService(repository)
+        val service = inventoryService(repository)
         val createdItem = service.create(createCommand(currentStock = 2))
 
         val updatedItem = service.edit(
             EditInventoryItemCommand(
                 itemId = createdItem.id,
                 name = "Spaghetti (500g)",
+                categoryId = Category.SYSTEM_CATEGORY_ID.value,
                 currentStock = 3,
                 minimumStock = 4,
                 targetStock = 6,
@@ -63,13 +66,14 @@ class InventoryServiceTest {
     @Test
     fun `allows editing an item without changing its normalized name`() {
         val repository = FakeInventoryItemRepository()
-        val service = InventoryService(repository)
+        val service = inventoryService(repository)
         val createdItem = service.create(createCommand(name = "Nudeln (500g)"))
 
         val updatedItem = service.edit(
             EditInventoryItemCommand(
                 itemId = createdItem.id,
                 name = "  nudeln   (500G)  ",
+                categoryId = Category.SYSTEM_CATEGORY_ID.value,
                 currentStock = 2,
                 minimumStock = 3,
                 targetStock = 5,
@@ -83,13 +87,13 @@ class InventoryServiceTest {
     @Test
     fun `rejects editing an item to another item's normalized name`() {
         val repository = FakeInventoryItemRepository()
-        val service = InventoryService(repository)
+        val service = inventoryService(repository)
         val pasta = service.create(createCommand(name = "Nudeln (500g)"))
         service.create(createCommand(name = "Reis (1kg)"))
 
         assertFailsWith<DuplicateItemNameException> {
             service.edit(
-                EditInventoryItemCommand(pasta.id, "reis (1KG)", 2, 3, 5, null),
+                EditInventoryItemCommand(pasta.id, "reis (1KG)", Category.SYSTEM_CATEGORY_ID.value, 2, 3, 5, null),
             )
         }
     }
@@ -97,7 +101,7 @@ class InventoryServiceTest {
     @Test
     fun `requires confirmation before deleting an item`() {
         val repository = FakeInventoryItemRepository()
-        val service = InventoryService(repository)
+        val service = inventoryService(repository)
         val item = service.create(createCommand())
 
         assertFailsWith<DeleteInventoryItemNotConfirmedException> {
@@ -110,7 +114,7 @@ class InventoryServiceTest {
     @Test
     fun `deletes an existing confirmed item`() {
         val repository = FakeInventoryItemRepository()
-        val service = InventoryService(repository)
+        val service = inventoryService(repository)
         val item = service.create(createCommand())
 
         service.delete(DeleteInventoryItemCommand(item.id, confirmed = true))
@@ -120,7 +124,7 @@ class InventoryServiceTest {
 
     @Test
     fun `rejects updates for a missing item`() {
-        val service = InventoryService(FakeInventoryItemRepository())
+        val service = inventoryService(FakeInventoryItemRepository())
 
         assertFailsWith<InventoryItemNotFoundException> {
             service.setCurrentStock(
@@ -132,7 +136,7 @@ class InventoryServiceTest {
     @Test
     fun `views a single inventory item`() {
         val repository = FakeInventoryItemRepository()
-        val service = InventoryService(repository)
+        val service = inventoryService(repository)
         val item = service.create(createCommand(name = "Haferflocken", currentStock = 4))
 
         val view = service.viewInventoryItem(item.id)
@@ -145,7 +149,7 @@ class InventoryServiceTest {
     @Test
     fun `changes current stock through every stock use case`() {
         val repository = FakeInventoryItemRepository()
-        val service = InventoryService(repository)
+        val service = inventoryService(repository)
         val item = service.create(createCommand(currentStock = 2, targetStock = 6))
 
         assertEquals(4, service.setCurrentStock(SetCurrentStockCommand(item.id, 4)).currentStock)
@@ -158,7 +162,7 @@ class InventoryServiceTest {
     @Test
     fun `filters inventory by a case insensitive part of the item name`() {
         val repository = FakeInventoryItemRepository()
-        val service = InventoryService(repository)
+        val service = inventoryService(repository)
         service.create(createCommand(name = "Nudeln (500g)", currentStock = 3))
         service.create(createCommand(name = "Reis (1kg)"))
 
@@ -171,56 +175,55 @@ class InventoryServiceTest {
     }
 
     @Test
-    fun `sorts inventory with critical items first and name as tie breaker`() {
+    fun `sorts inventory by name in both directions`() {
         val repository = FakeInventoryItemRepository()
-        val service = InventoryService(repository)
+        val service = inventoryService(repository)
         service.create(createCommand(name = "Reis", currentStock = 3, minimumStock = 3))
         service.create(createCommand(name = "Äpfel", currentStock = 1, minimumStock = 2))
         service.create(createCommand(name = "Bohnen", currentStock = 0, minimumStock = 2))
 
-        val overview = service.viewInventoryItems(InventoryItemsQuery(sort = InventoryItemSort.CRITICAL_FIRST))
+        val ascending = service.viewInventoryItems(InventoryItemsQuery(sort = InventoryItemSort.NAME_ASCENDING))
+        val descending = service.viewInventoryItems(InventoryItemsQuery(sort = InventoryItemSort.NAME_DESCENDING))
 
-        assertEquals(listOf("Bohnen", "Äpfel", "Reis"), overview.items.map { item -> item.name })
-        assertTrue(overview.hasPurchaseNeeds)
+        assertEquals(listOf("Bohnen", "Reis", "Äpfel"), ascending.items.map { item -> item.name })
+        assertEquals(listOf("Äpfel", "Reis", "Bohnen"), descending.items.map { item -> item.name })
     }
 
     @Test
-    fun `sorts inventory by current stock in both directions`() {
+    fun `sorts shopping list by name in both directions`() {
         val repository = FakeInventoryItemRepository()
-        val service = InventoryService(repository)
+        val service = inventoryService(repository)
         service.create(createCommand(name = "A", currentStock = 3))
         service.create(createCommand(name = "B", currentStock = 1))
         service.create(createCommand(name = "C", currentStock = 2))
 
-        val ascending = service.viewInventoryItems(InventoryItemsQuery(sort = InventoryItemSort.CURRENT_STOCK_ASCENDING))
-        val descending = service.viewInventoryItems(InventoryItemsQuery(sort = InventoryItemSort.CURRENT_STOCK_DESCENDING))
+        val ascending = service.viewShoppingList(ShoppingListQuery(ShoppingListSort.NAME_ASCENDING))
+        val descending = service.viewShoppingList(ShoppingListQuery(ShoppingListSort.NAME_DESCENDING))
 
-        assertEquals(listOf("B", "C", "A"), ascending.items.map { item -> item.name })
-        assertEquals(listOf("A", "C", "B"), descending.items.map { item -> item.name })
+        assertEquals(listOf("A", "B", "C"), ascending.map { item -> item.itemName })
+        assertEquals(listOf("C", "B", "A"), descending.map { item -> item.itemName })
     }
 
     @Test
     fun `derives and sorts the shopping list from items below target stock`() {
         val repository = FakeInventoryItemRepository()
-        val service = InventoryService(repository)
+        val service = inventoryService(repository)
         service.create(createCommand(name = "Nudeln", currentStock = 2, minimumStock = 3, targetStock = 5, note = "Bio"))
         service.create(createCommand(name = "Reis", currentStock = 0, minimumStock = 2, targetStock = 7))
         service.create(createCommand(name = "Salz", currentStock = 3, minimumStock = 3, targetStock = 5))
 
-        val shoppingList = service.viewShoppingList(
-            ShoppingListQuery(ShoppingListSort.RECOMMENDED_PURCHASE_QUANTITY_DESCENDING),
-        )
+        val shoppingList = service.viewShoppingList(ShoppingListQuery(ShoppingListSort.NAME_ASCENDING))
 
-        assertEquals(listOf("Reis", "Nudeln", "Salz"), shoppingList.map { item -> item.itemName })
-        assertEquals(listOf(7, 3, 2), shoppingList.map { item -> item.recommendedPurchaseQuantity })
+        assertEquals(listOf("Nudeln", "Reis", "Salz"), shoppingList.map { item -> item.itemName })
+        assertEquals(listOf(3, 7, 2), shoppingList.map { item -> item.recommendedPurchaseQuantity })
         assertEquals(listOf(true, true, false), shoppingList.map { item -> item.isBelowMinimumStock })
-        assertEquals("Bio", shoppingList[1].note)
+        assertEquals("Bio", shoppingList[0].note)
     }
 
     @Test
     fun `sets every current shopping list item to target stock after confirmation`() {
         val repository = FakeInventoryItemRepository()
-        val service = InventoryService(repository)
+        val service = inventoryService(repository)
         service.create(createCommand(name = "Nudeln", currentStock = 1, targetStock = 5))
         service.create(createCommand(name = "Reis", currentStock = 2, targetStock = 6))
         val fullItem = service.create(createCommand(name = "Salz", currentStock = 5, targetStock = 5))
@@ -233,7 +236,7 @@ class InventoryServiceTest {
 
     @Test
     fun `requires confirmation before setting all shopping list items to target stock`() {
-        val service = InventoryService(FakeInventoryItemRepository())
+        val service = inventoryService(FakeInventoryItemRepository())
 
         assertFailsWith<SetShoppingListToTargetNotConfirmedException> {
             service.setShoppingListToTarget(SetShoppingListToTargetCommand(confirmed = false))
@@ -246,7 +249,10 @@ class InventoryServiceTest {
         minimumStock: Int = 3,
         targetStock: Int = 5,
         note: String? = null,
-    ) = CreateInventoryItemCommand(name, currentStock, minimumStock, targetStock, note)
+    ) = CreateInventoryItemCommand(name, Category.SYSTEM_CATEGORY_ID.value, currentStock, minimumStock, targetStock, note)
+
+    private fun inventoryService(repository: FakeInventoryItemRepository): InventoryService =
+        InventoryService(repository, FakeCategoryRepository())
 
     private class FakeInventoryItemRepository : InventoryItemRepository {
         private val items = mutableMapOf<InventoryItemId, InventoryItem>()
@@ -266,6 +272,9 @@ class InventoryServiceTest {
             items.remove(id)
         }
 
+        override fun existsByCategoryId(categoryId: CategoryId): Boolean =
+            items.values.any { it.categoryId == categoryId }
+
         override fun existsByNormalizedName(normalizedName: String): Boolean =
             items.values.any { item -> item.name.normalizedValue == normalizedName }
 
@@ -275,5 +284,19 @@ class InventoryServiceTest {
         ): Boolean = items.values.any { item ->
             item.id != excludedId && item.name.normalizedValue == normalizedName
         }
+    }
+
+    private class FakeCategoryRepository : CategoryRepository {
+        private val categories = mutableMapOf(Category.SYSTEM_CATEGORY_ID to Category.reconstitute(
+            Category.SYSTEM_CATEGORY_ID,
+            Category.SYSTEM_CATEGORY_NAME,
+        ))
+
+        override fun save(category: Category): Category = category.also { categories[it.id] = it }
+        override fun findById(id: CategoryId): Category? = categories[id]
+        override fun findAll(): List<Category> = categories.values.toList()
+        override fun deleteById(id: CategoryId) { categories.remove(id) }
+        override fun existsByNormalizedName(normalizedName: String): Boolean = categories.values.any { it.name.normalizedValue == normalizedName }
+        override fun existsByNormalizedNameExcludingId(normalizedName: String, excludedId: CategoryId): Boolean = categories.values.any { it.id != excludedId && it.name.normalizedValue == normalizedName }
     }
 }

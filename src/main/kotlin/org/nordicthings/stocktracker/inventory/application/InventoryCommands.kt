@@ -2,6 +2,7 @@ package org.nordicthings.stocktracker.inventory.application
 
 data class CreateInventoryItemCommand(
     val name: String,
+    val categoryId: String,
     val currentStock: Int,
     val minimumStock: Int,
     val targetStock: Int,
@@ -11,6 +12,7 @@ data class CreateInventoryItemCommand(
 data class EditInventoryItemCommand(
     val itemId: String,
     val name: String,
+    val categoryId: String,
     val currentStock: Int,
     val minimumStock: Int,
     val targetStock: Int,
@@ -34,11 +36,12 @@ data class ChangeCurrentStockCommand(
 
 data class InventoryItemsQuery(
     val searchTerm: String? = null,
-    val sort: InventoryItemSort = InventoryItemSort.NAME,
+    val categoryId: String? = null,
+    val sort: InventoryItemSort = InventoryItemSort.NAME_ASCENDING,
 )
 
 data class ShoppingListQuery(
-    val sort: ShoppingListSort = ShoppingListSort.NAME,
+    val sort: ShoppingListSort = ShoppingListSort.CATEGORY_ASCENDING,
 )
 
 data class SetShoppingListToTargetCommand(
@@ -46,14 +49,24 @@ data class SetShoppingListToTargetCommand(
 )
 
 enum class InventoryItemSort {
-    NAME,
-    CRITICAL_FIRST,
-    CURRENT_STOCK_ASCENDING,
-    CURRENT_STOCK_DESCENDING,
+    NAME_ASCENDING,
+    NAME_DESCENDING,
+    CATEGORY_ASCENDING,
+    CATEGORY_DESCENDING,
 }
 
 enum class ShoppingListSort {
-    NAME,
-    RECOMMENDED_PURCHASE_QUANTITY_DESCENDING,
-    RECOMMENDED_PURCHASE_QUANTITY_ASCENDING,
+    NAME_ASCENDING,
+    NAME_DESCENDING,
+    CATEGORY_ASCENDING,
+    CATEGORY_DESCENDING,
+}
+
+data class CreateCategoryCommand(val name: String)
+
+data class EditCategoryCommand(val categoryId: String, val name: String)
+
+enum class CategorySort {
+    NAME_ASCENDING,
+    NAME_DESCENDING,
 }

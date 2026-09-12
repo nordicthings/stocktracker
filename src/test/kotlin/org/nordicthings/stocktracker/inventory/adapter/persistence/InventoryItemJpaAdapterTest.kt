@@ -8,6 +8,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import org.nordicthings.stocktracker.inventory.domain.CurrentStock
+import org.nordicthings.stocktracker.inventory.domain.Category
 import org.nordicthings.stocktracker.inventory.domain.InventoryItem
 import org.nordicthings.stocktracker.inventory.domain.ItemName
 import org.nordicthings.stocktracker.inventory.domain.ItemNote
@@ -100,6 +101,7 @@ class InventoryItemJpaAdapterTest @Autowired constructor(
         note: String? = null,
     ): InventoryItem = InventoryItem.create(
         name = ItemName.of(name),
+        categoryId = Category.SYSTEM_CATEGORY_ID,
         currentStock = CurrentStock.of(2),
         minimumStock = MinimumStock.of(3),
         targetStock = TargetStock.of(5),

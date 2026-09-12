@@ -2,6 +2,7 @@ package org.nordicthings.stocktracker.inventory.adapter.persistence
 
 import java.time.Instant
 import org.nordicthings.stocktracker.inventory.domain.CurrentStock
+import org.nordicthings.stocktracker.inventory.domain.CategoryId
 import org.nordicthings.stocktracker.inventory.domain.InventoryItem
 import org.nordicthings.stocktracker.inventory.domain.InventoryItemId
 import org.nordicthings.stocktracker.inventory.domain.ItemName
@@ -16,6 +17,7 @@ class InventoryItemJpaMapper {
     fun toDomain(entity: InventoryItemJpaEntity): InventoryItem = InventoryItem.reconstitute(
         id = InventoryItemId.of(entity.id),
         name = ItemName.of(entity.name),
+        categoryId = CategoryId.of(entity.categoryId),
         currentStock = CurrentStock.of(entity.currentStock),
         minimumStock = MinimumStock.of(entity.minimumStock),
         targetStock = TargetStock.of(entity.targetStock),
@@ -30,6 +32,7 @@ class InventoryItemJpaMapper {
         id = item.id.value,
         name = item.name.value,
         normalizedName = item.name.normalizedValue,
+        categoryId = item.categoryId.value,
         currentStock = item.currentStock.value,
         minimumStock = item.minimumStock.value,
         targetStock = item.targetStock.value,

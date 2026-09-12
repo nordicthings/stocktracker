@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kategorien</title><link rel="stylesheet" th:href="@{/css/inventory.css}">
+    <script defer th:src="@{/webjars/htmx.org/dist/htmx.min.js}"></script>
+</head>
+<body class="inventory-page" hx-boost="true"><main class="page-shell">
+    <header class="page-header"><div><p class="eyebrow">Nordic Things</p><h1>Kategorien</h1></div><div class="header-actions"><a class="secondary-action" th:href="@{/items}">Zur Bestandsliste</a><a class="secondary-action" th:href="@{/categories/new}">Neue Kategorie</a></div></header>
+    <section class="message error" th:if="${errorMessage}" th:text="${errorMessage}"></section>
+    <section class="workspace"><p class="empty-state" th:if="${categories.isEmpty()}">Noch keine Kategorien vorhanden.</p>
+        <div class="inventory-table-wrap" th:if="${!categories.isEmpty()}"><table class="inventory-table category-table"><thead><tr><th scope="col"><a th:href="@{/categories(categorySort=${nextNameSort})}">Kategorie</a></th><th scope="col">Artikel</th><th scope="col" aria-label="Aktionen"></th></tr></thead><tbody>
+            <tr th:each="category : ${categories}"><td><div class="item-name-cell"><a th:if="${!category.isSystemCategory}" th:href="@{/categories/{categoryId}(categoryId=${category.id})}" th:text="${category.name}">Konserven</a><span th:if="${category.isSystemCategory}" th:text="${category.name}">--ohne--</span></div></td><td th:text="${category.articleCount}">0</td><td><div class="table-actions"><a class="secondary-action" th:if="${!category.isSystemCategory}" th:href="@{/categories/{categoryId}(categoryId=${category.id})}">Bearbeiten</a></div></td></tr>
+        </tbody></table></div>
+    </section>
+</main></body></html>

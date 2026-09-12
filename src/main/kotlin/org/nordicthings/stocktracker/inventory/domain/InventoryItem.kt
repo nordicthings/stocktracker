@@ -8,6 +8,7 @@ class InventoryItem private constructor(
     @field:Identity
     val id: InventoryItemId,
     val name: ItemName,
+    val categoryId: CategoryId,
     val currentStock: CurrentStock,
     val minimumStock: MinimumStock,
     val targetStock: TargetStock,
@@ -29,6 +30,7 @@ class InventoryItem private constructor(
 
     fun edit(
         name: ItemName,
+        categoryId: CategoryId,
         currentStock: CurrentStock,
         minimumStock: MinimumStock,
         targetStock: TargetStock,
@@ -36,6 +38,7 @@ class InventoryItem private constructor(
     ): InventoryItem = InventoryItem(
         id = id,
         name = name,
+        categoryId = categoryId,
         currentStock = currentStock,
         minimumStock = minimumStock,
         targetStock = targetStock,
@@ -45,6 +48,7 @@ class InventoryItem private constructor(
     fun setCurrentStock(currentStock: CurrentStock): InventoryItem = InventoryItem(
         id = id,
         name = name,
+        categoryId = categoryId,
         currentStock = currentStock,
         minimumStock = minimumStock,
         targetStock = targetStock,
@@ -74,6 +78,7 @@ class InventoryItem private constructor(
             ShoppingListItem(
                 itemId = id,
                 itemName = name,
+                categoryId = categoryId,
                 currentStock = currentStock,
                 minimumStock = minimumStock,
                 targetStock = targetStock,
@@ -93,6 +98,7 @@ class InventoryItem private constructor(
     companion object {
         fun create(
             name: ItemName,
+            categoryId: CategoryId,
             currentStock: CurrentStock,
             minimumStock: MinimumStock,
             targetStock: TargetStock,
@@ -100,6 +106,7 @@ class InventoryItem private constructor(
         ): InventoryItem = InventoryItem(
             id = InventoryItemId.newId(),
             name = name,
+            categoryId = categoryId,
             currentStock = currentStock,
             minimumStock = minimumStock,
             targetStock = targetStock,
@@ -109,6 +116,7 @@ class InventoryItem private constructor(
         fun reconstitute(
             id: InventoryItemId,
             name: ItemName,
+            categoryId: CategoryId,
             currentStock: CurrentStock,
             minimumStock: MinimumStock,
             targetStock: TargetStock,
@@ -116,6 +124,7 @@ class InventoryItem private constructor(
         ): InventoryItem = InventoryItem(
             id = id,
             name = name,
+            categoryId = categoryId,
             currentStock = currentStock,
             minimumStock = minimumStock,
             targetStock = targetStock,

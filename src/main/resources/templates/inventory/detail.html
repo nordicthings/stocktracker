@@ -40,6 +40,10 @@
                 <span>Soll</span>
                 <input name="targetStock" required inputmode="numeric" min="1" type="number" th:value="${item.targetStock}">
             </label>
+            <label>
+                <span>Kategorie</span>
+                <select name="categoryId" required><option th:each="category : ${categories}" th:value="${category.id}" th:selected="${category.id == item.categoryId}" th:text="${category.name}">--ohne--</option></select>
+            </label>
             <label class="wide">
                 <span>Notiz</span>
                 <textarea name="note" maxlength="500" rows="4" th:text="${item.note}"></textarea>
