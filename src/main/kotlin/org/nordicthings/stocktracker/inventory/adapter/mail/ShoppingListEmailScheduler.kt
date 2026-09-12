@@ -9,7 +9,10 @@ class ShoppingListEmailScheduler(
     private val checkScheduledShoppingListEmail: CheckScheduledShoppingListEmailUseCase,
 ) {
 
-    @Scheduled(cron = "\${stocktracker.shopping-list-email.schedule:-}")
+    @Scheduled(
+        cron = "\${stocktracker.shopping-list-email.schedule:-}",
+        zone = "Europe/Berlin",
+    )
     fun checkForScheduledDispatch() {
         checkScheduledShoppingListEmail.checkScheduledShoppingListEmail()
     }

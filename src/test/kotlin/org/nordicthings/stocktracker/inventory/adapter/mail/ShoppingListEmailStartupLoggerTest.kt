@@ -18,7 +18,10 @@ class ShoppingListEmailStartupLoggerTest {
 
         ShoppingListEmailStartupLogger(properties).logConfiguration()
 
-        assertContains(output.out, "Automatischer Versand der Einkaufsliste ist aktiviert (CRON: 0 0 19 * * MON,WED,FRI).")
+        assertContains(
+            output.out,
+            "Automatischer Versand der Einkaufsliste ist aktiviert (CRON: 0 0 19 * * MON,WED,FRI, Zeitzone: Europe/Berlin).",
+        )
         assertContains(output.out, "Empfänger für Einkaufslisten-E-Mails: firs***@somew***, seco***@examp***.")
     }
 }

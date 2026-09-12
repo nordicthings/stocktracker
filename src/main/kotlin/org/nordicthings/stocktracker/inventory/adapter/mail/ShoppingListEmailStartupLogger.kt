@@ -17,9 +17,12 @@ class ShoppingListEmailStartupLogger(
 
     fun logConfiguration() {
         if (properties.schedule == "-") {
-            logger.info("Automatischer Versand der Einkaufsliste ist deaktiviert (CRON: -).")
+            logger.info("Automatischer Versand der Einkaufsliste ist deaktiviert (CRON: -, Zeitzone: Europe/Berlin).")
         } else {
-            logger.info("Automatischer Versand der Einkaufsliste ist aktiviert (CRON: {}).", properties.schedule)
+            logger.info(
+                "Automatischer Versand der Einkaufsliste ist aktiviert (CRON: {}, Zeitzone: Europe/Berlin).",
+                properties.schedule,
+            )
         }
 
         val recipients = properties.recipients.map(String::trim).filter(String::isNotBlank)
