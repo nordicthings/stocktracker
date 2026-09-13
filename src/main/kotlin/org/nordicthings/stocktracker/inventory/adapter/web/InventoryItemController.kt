@@ -151,7 +151,12 @@ class InventoryItemController(
         @RequestParam(required = false) categoryId: String?,
         @RequestParam(required = false) note: String?,
         redirectAttributes: RedirectAttributes,
-    ): String = handleInventoryAction(redirectAttributes, "Artikel wurde aktualisiert.", "/items/$itemId") {
+    ): String = handleInventoryAction(
+        redirectAttributes = redirectAttributes,
+        successMessage = null,
+        successRedirectPath = "/items",
+        failureRedirectPath = "/items/$itemId",
+    ) {
         editInventoryItem.edit(
             EditInventoryItemCommand(
                 itemId = itemId,
@@ -208,7 +213,7 @@ class InventoryItemController(
     ): String = handleInventoryAction(
         redirectAttributes = redirectAttributes,
         successMessage = null,
-        redirectPath = returnTo.redirectPath(),
+        successRedirectPath = returnTo.redirectPath(),
     ) {
         setStockToTarget.setStockToTarget(itemId)
     }
@@ -216,7 +221,8 @@ class InventoryItemController(
     private fun handleInventoryAction(
         redirectAttributes: RedirectAttributes,
         successMessage: String?,
-        redirectPath: String = "/items",
+        successRedirectPath: String = "/items",
+        failureRedirectPath: String = successRedirectPath,
         successFocusTarget: String? = null,
         action: () -> Unit,
     ): String {
@@ -228,6 +234,7 @@ class InventoryItemController(
             if (successFocusTarget != null) {
                 redirectAttributes.addFlashAttribute("focusTarget", successFocusTarget)
             }
+            return "redirect:$successRedirectPath"
         } catch (exception: InventoryApplicationException) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.toUserMessage())
         } catch (exception: InventoryException) {
@@ -236,7 +243,7 @@ class InventoryItemController(
             redirectAttributes.addFlashAttribute("errorMessage", exception.message)
         }
 
-        return "redirect:$redirectPath"
+        return "redirect:$failureRedirectPath"
     }
 
     private fun String?.toInventoryItemSort(): InventoryItemSort =

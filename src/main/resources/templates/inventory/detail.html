@@ -8,6 +8,7 @@
     <link rel="apple-touch-icon" th:href="@{/apple-touch-icon.png}">
     <link rel="stylesheet" th:href="@{/css/inventory.css}">
     <script defer th:src="@{/js/inventory-scroll.js}"></script>
+    <script defer th:src="@{/js/unsaved-changes.js}"></script>
 </head>
 <body>
 <main class="page-shell detail-shell">
@@ -16,10 +17,9 @@
             <p class="eyebrow">Nordic Things</p>
             <h1 th:text="${item.name}">Artikel</h1>
         </div>
-        <a class="secondary-action" data-restore-inventory-scroll th:href="@{/items}">Zurück</a>
+        <a class="secondary-action" data-confirm-discard-changes data-form-id="item-edit-form" data-restore-inventory-scroll th:href="@{/items}">Zurück</a>
     </header>
 
-    <section class="message success" th:if="${successMessage}" th:text="${successMessage}"></section>
     <section class="message error" th:if="${errorMessage}" th:text="${errorMessage}"></section>
 
     <section class="detail-panel">

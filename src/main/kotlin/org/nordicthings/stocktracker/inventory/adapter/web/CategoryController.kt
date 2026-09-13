@@ -57,7 +57,11 @@ class CategoryController(
 
     @PostMapping("/categories/{categoryId}")
     fun edit(@PathVariable categoryId: String, @RequestParam name: String, redirectAttributes: RedirectAttributes): String =
-        handle(redirectAttributes, "/categories/$categoryId", "Kategorie wurde aktualisiert.") {
+        handle(
+            redirectAttributes = redirectAttributes,
+            successRedirectPath = "/categories",
+            failureRedirectPath = "/categories/$categoryId",
+        ) {
             editCategory.edit(EditCategoryCommand(categoryId, name))
         }
 
@@ -75,19 +79,19 @@ class CategoryController(
 
     private fun handle(
         redirectAttributes: RedirectAttributes,
-        redirectPath: String = "/categories",
-        successMessage: String? = null,
+        successRedirectPath: String = "/categories",
+        failureRedirectPath: String = successRedirectPath,
         action: () -> Unit,
     ): String {
         try {
             action()
-            successMessage?.let { redirectAttributes.addFlashAttribute("successMessage", it) }
+            return "redirect:$successRedirectPath"
         } catch (exception: InventoryApplicationException) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.toUserMessage())
         } catch (exception: InventoryException) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.toUserMessage())
         }
-        return "redirect:$redirectPath"
+        return "redirect:$failureRedirectPath"
     }
 
     private fun String?.toCategorySort(): CategorySort =

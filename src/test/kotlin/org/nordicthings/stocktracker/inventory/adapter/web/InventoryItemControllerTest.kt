@@ -14,6 +14,7 @@ import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import org.nordicthings.stocktracker.inventory.adapter.persistence.CategoryJpaRepository
 import org.nordicthings.stocktracker.inventory.adapter.persistence.InventoryItemJpaRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -28,6 +29,7 @@ import org.springframework.test.context.TestPropertySource
 )
 class InventoryItemControllerTest @Autowired constructor(
     private val jpaRepository: InventoryItemJpaRepository,
+    private val categoryJpaRepository: CategoryJpaRepository,
 ) {
 
     @LocalServerPort
@@ -417,7 +419,10 @@ class InventoryItemControllerTest @Autowired constructor(
         assertContains(detailResponse.body(), "Änderungen speichern")
         assertContains(detailResponse.body(), ">Zurück</a>")
         assertContains(detailResponse.body(), "/js/inventory-scroll.js")
+        assertContains(detailResponse.body(), "/js/unsaved-changes.js")
         assertContains(detailResponse.body(), "data-restore-inventory-scroll")
+        assertContains(detailResponse.body(), "data-confirm-discard-changes")
+        assertContains(detailResponse.body(), "data-form-id=\"item-edit-form\"")
         assertContains(detailResponse.body(), "Löschen")
         assertFalse(detailResponse.body().contains("Zur Istbestandspflege"))
         assertFalse(detailResponse.body().contains("Istbestand speichern"))
@@ -434,11 +439,23 @@ class InventoryItemControllerTest @Autowired constructor(
         )
 
         assertEquals(200, editResponse.statusCode())
-        assertContains(editResponse.body(), "Artikel wurde aktualisiert.")
         assertContains(editResponse.body(), "Basmatireis (1kg)")
-        assertContains(editResponse.body(), "name=\"currentStock\"")
-        assertContains(editResponse.body(), "value=\"5\"")
-        assertContains(editResponse.body(), "Großer Sack")
+        assertFalse(editResponse.body().contains("Artikel wurde aktualisiert."))
+        assertFalse(editResponse.body().contains("id=\"item-edit-form\""))
+
+        val invalidEditResponse = post(
+            "/items/$itemId/edit",
+            form(
+                "name" to "Basmatireis (1kg)",
+                "currentStock" to "unbekannt",
+                "minimumStock" to "4",
+                "targetStock" to "8",
+            ),
+        )
+
+        assertEquals(200, invalidEditResponse.statusCode())
+        assertContains(invalidEditResponse.body(), "Istbestand muss eine ganze Zahl sein.")
+        assertContains(invalidEditResponse.body(), "name=\"currentStock\"")
     }
 
     @Test
@@ -473,6 +490,29 @@ class InventoryItemControllerTest @Autowired constructor(
         assertContains(response.body(), "Konserven")
         assertContains(response.body(), "--ohne--")
         assertContains(response.body(), "Artikel")
+    }
+
+    @Test
+    fun `edits category and returns to category overview or shows validation errors on detail page`() {
+        post("/categories", form("name" to "Konserven"))
+        val categoryId = categoryJpaRepository.findAll().single { it.name == "Konserven" }.id
+
+        val detailResponse = get("/categories/$categoryId")
+        assertContains(detailResponse.body(), "/js/unsaved-changes.js")
+        assertContains(detailResponse.body(), "data-confirm-discard-changes")
+        assertContains(detailResponse.body(), "data-form-id=\"category-form\"")
+
+        val editResponse = post("/categories/$categoryId", form("name" to "Vorratsdosen"))
+
+        assertEquals(200, editResponse.statusCode())
+        assertContains(editResponse.body(), "Vorratsdosen")
+        assertFalse(editResponse.body().contains("Kategorie wurde aktualisiert."))
+
+        val invalidEditResponse = post("/categories/$categoryId", form("name" to ""))
+
+        assertEquals(200, invalidEditResponse.statusCode())
+        assertContains(invalidEditResponse.body(), "Die Eingabe ist fachlich ungültig.")
+        assertContains(invalidEditResponse.body(), "name=\"name\"")
     }
 
     private fun get(path: String): HttpResponse<String> {
