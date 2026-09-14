@@ -108,8 +108,10 @@ class InventoryItemControllerTest @Autowired constructor(
         assertContains(shoppingResponse.body(), "Per E-Mail versenden")
         assertContains(shoppingResponse.body(), "Alle Einkaufslistenpositionen auf Sollbestand setzen?")
         assertFalse(shoppingResponse.body().contains("Istbestand"))
-        assertFalse(shoppingResponse.body().contains("Mindestbestand"))
+        assertFalse(shoppingResponse.body().contains("<th scope=\"col\">Mindestbestand</th>"))
         assertContains(shoppingResponse.body(), ">4<")
+        assertContains(shoppingResponse.body(), "Unter Mindestbestand")
+        assertContains(shoppingResponse.body(), "class=\"critical\"")
     }
 
     @Test

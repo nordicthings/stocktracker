@@ -18,6 +18,7 @@ data class ShoppingListEmailItem(
     val itemName: String,
     val categoryName: String,
     val purchaseQuantity: Int,
+    val isBelowMinimumStock: Boolean,
 )
 
 interface ShoppingListEmailSender {

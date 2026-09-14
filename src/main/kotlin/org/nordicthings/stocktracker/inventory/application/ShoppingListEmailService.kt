@@ -69,6 +69,7 @@ class ShoppingListEmailService(
                     itemName = item.name.value,
                     categoryName = categoriesById.getValue(item.categoryId).name.value,
                     purchaseQuantity = item.targetStock.value - item.currentStock.value,
+                    isBelowMinimumStock = item.isBelowMinimumStock,
                 )
             },
         )

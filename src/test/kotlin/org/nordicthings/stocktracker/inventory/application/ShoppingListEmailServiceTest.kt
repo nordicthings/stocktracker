@@ -35,6 +35,7 @@ class ShoppingListEmailServiceTest {
         assertEquals(1, sender.sentEmails.size)
         assertEquals(listOf("Nudeln"), sender.sentEmails.single().items.map { it.itemName })
         assertEquals(listOf(3), sender.sentEmails.single().items.map { it.purchaseQuantity })
+        assertEquals(listOf(false), sender.sentEmails.single().items.map { it.isBelowMinimumStock })
         assertEquals(1, dispatches.successfulDispatches.size)
     }
 
@@ -64,6 +65,7 @@ class ShoppingListEmailServiceTest {
         service.checkScheduledShoppingListEmail()
 
         assertEquals(1, sender.sentEmails.size)
+        assertEquals(listOf(true), sender.sentEmails.single().items.map { it.isBelowMinimumStock })
         assertEquals(1, dispatches.successfulDispatches.size)
     }
 

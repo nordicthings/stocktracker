@@ -32,10 +32,15 @@ class SpringMailShoppingListEmailSender(
     }
 
     private fun renderHtml(email: ShoppingListEmail): String = buildString {
+        val includesItemBelowMinimumStock = email.items.any { it.isBelowMinimumStock }
         append("<html><body><h1>")
         append(HtmlUtils.htmlEscape(email.subject))
         append("</h1><table border=\"1\" cellpadding=\"8\" cellspacing=\"0\">")
-        append("<thead><tr><th style=\"text-align: left;\">Kategorie</th><th style=\"text-align: left;\">Artikel</th><th>Einkaufsmenge</th></tr></thead><tbody>")
+        append("<thead><tr><th style=\"text-align: left;\">Kategorie</th><th style=\"text-align: left;\">Artikel</th><th>Einkaufsmenge</th>")
+        if (includesItemBelowMinimumStock) {
+            append("<th style=\"text-align: left;\">Dringlichkeit</th>")
+        }
+        append("</tr></thead><tbody>")
         email.items.forEach { item ->
             append("<tr><td style=\"text-align: left;\">")
             append(HtmlUtils.htmlEscape(item.categoryName))
@@ -43,7 +48,15 @@ class SpringMailShoppingListEmailSender(
             append(HtmlUtils.htmlEscape(item.itemName))
             append("</td><td style=\"text-align: center;\">")
             append(item.purchaseQuantity)
-            append("</td></tr>")
+            append("</td>")
+            if (includesItemBelowMinimumStock) {
+                append("<td style=\"text-align: left;\">")
+                if (item.isBelowMinimumStock) {
+                    append("Unter Mindestbestand")
+                }
+                append("</td>")
+            }
+            append("</tr>")
         }
         append("</tbody></table></body></html>")
     }

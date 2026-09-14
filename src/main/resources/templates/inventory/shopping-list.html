@@ -29,8 +29,8 @@
             <table class="inventory-table shopping-list-table">
                 <thead><tr><th scope="col"><a th:href="@{/shopping-list(shoppingSort=${nextNameSort})}">Artikel</a></th><th scope="col"><a th:href="@{/shopping-list(shoppingSort=${nextCategorySort})}">Kategorie</a></th><th scope="col">Einkaufsmenge</th><th scope="col" aria-label="Aktionen"></th></tr></thead>
                 <tbody>
-                <tr th:each="item : ${shoppingList}">
-                    <td th:text="${item.itemName}">Reis</td>
+                <tr th:each="item : ${shoppingList}" th:classappend="${item.isBelowMinimumStock} ? 'critical'">
+                    <td><div class="item-name-cell"><span th:text="${item.itemName}">Reis</span><span class="status" th:if="${item.isBelowMinimumStock}">Unter Mindestbestand</span></div></td>
                     <td th:text="${item.categoryName}">Konserven</td><td th:text="${item.recommendedPurchaseQuantity}">2</td>
                     <td><div class="table-actions"><form method="post" th:action="@{/items/{itemId}/stock/fill-to-target(itemId=${item.itemId})}"><input type="hidden" name="returnTo" value="shopping-list"><button type="submit">Auf Sollbestand</button></form></div></td>
                 </tr>
