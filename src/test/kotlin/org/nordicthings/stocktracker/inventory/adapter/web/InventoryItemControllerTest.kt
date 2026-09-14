@@ -77,6 +77,10 @@ class InventoryItemControllerTest @Autowired constructor(
         assertContains(createResponse.body(), "Nudeln (500g)")
         assertContains(createResponse.body(), "Nachkaufbedarf")
         assertContains(createResponse.body(), "1 Artikel unter Mindestbestand")
+        assertContains(
+            createResponse.body().substringAfter("stock-alert critical").substringBefore("</a>"),
+            "data-preserve-inventory-scroll",
+        )
         assertContains(createResponse.body(), "<th scope=\"col\"><a")
         assertContains(createResponse.body(), ">Artikel</a></th>")
         assertContains(createResponse.body(), ">Kategorie</a></th>")
@@ -129,6 +133,10 @@ class InventoryItemControllerTest @Autowired constructor(
         assertEquals(200, response.statusCode())
         assertContains(response.body(), "1 Artikel unter Sollbestand")
         assertFalse(response.body().contains("1 Artikel unter Mindestbestand"))
+        assertContains(
+            response.body().substringAfter("stock-alert warning").substringBefore("</a>"),
+            "data-preserve-inventory-scroll",
+        )
 
         val shoppingResponse = get("/shopping-list")
 

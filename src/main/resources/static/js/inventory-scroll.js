@@ -60,4 +60,5 @@
 
     window.addEventListener("pageshow", restoreInventoryScroll);
     document.addEventListener("DOMContentLoaded", restoreInventoryScroll);
+    document.addEventListener("htmx:afterSettle", restoreInventoryScroll);
 })();

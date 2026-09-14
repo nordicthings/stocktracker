@@ -20,12 +20,14 @@
         <div class="header-actions">
             <a class="stock-alert critical"
                th:if="${inventoryOverview.belowMinimumStockCount > 0}"
+               data-preserve-inventory-scroll
                th:href="@{/shopping-list}"
                th:text="${inventoryOverview.belowMinimumStockCount + ' Artikel unter Mindestbestand'}">
                 1 Artikel unter Mindestbestand
             </a>
             <a class="stock-alert warning"
                th:if="${inventoryOverview.belowMinimumStockCount == 0 && inventoryOverview.belowTargetStockCount > 0}"
+               data-preserve-inventory-scroll
                th:href="@{/shopping-list}"
                th:text="${inventoryOverview.belowTargetStockCount + ' Artikel unter Sollbestand'}">
                 1 Artikel unter Sollbestand
